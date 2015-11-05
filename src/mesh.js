@@ -2,10 +2,13 @@ Four.Mesh = function () {
 
 
 
-  init()
+  this.init()
 }
 
 Four.Mesh.prototype = {
+  init: function() {
+
+  },
   randomColor: function () {
     var min = 64;
     var max = 224;
@@ -15,6 +18,7 @@ Four.Mesh.prototype = {
     return r + g + b;
   },
   sphere: function (params) {
+    if(!params) params = {};
     var x = params.x || 0,
       y = params.y || 0,
       z = params.z || 0,
@@ -23,14 +27,14 @@ Four.Mesh.prototype = {
       heightSegments = params.heightSegments || 16,
       materialType = params.materialType || 'MeshPhongMaterial'
     materialParams = params.materialParams || {
-      color: randomFairColor(),
+      color: this.randomColor(),
       //ambient: 0x2d2d2d2d,
       specular: 0xb4b4b4b4,
       shininess: 2,
       reflectivity: 2
     }
 
-    var center = new THREE.Vector(x, y, z)
+    var center = new THREE.Vector3(x, y, z)
 
     var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments)
 
