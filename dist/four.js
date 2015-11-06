@@ -21,6 +21,8 @@ Four.Arrangement.prototype = {
     this.renderer = setup.Renderer();
     this.lights.push(setup.Lights());
 
+    this.addToScene(this.lights[0]);
+
     //Reads the flag for debug mode
     if (this.debugMode) this.debug();
   },
