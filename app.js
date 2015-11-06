@@ -19,4 +19,4 @@ router.get('/', function(req, res, next) {
 
 module.exports = router;
 
-var server = app.listen(3000);
+app.listen(3000);

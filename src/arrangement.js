@@ -1,6 +1,6 @@
 var Four = {};
 Four.Arrangement = function() {
-  this.debugMode = false;
+  this.debugMode = true;
 
   this.scene = null;
   this.camera = null;
@@ -27,11 +27,11 @@ Four.Arrangement.prototype = {
   },
   debug: function() {
     var axis = new THREE.AxisHelper(10);
-    scene.add(axis)
+    this.scene.add(axis)
 
     var grid = new THREE.GridHelper(50, 5);
     grid.setColors("rgb(255,0,0)", 0x222222);
-    scene.add(grid);
+    this.scene.add(grid);
   },
   addToScene: function(mesh) {
   this.scene.add(mesh)

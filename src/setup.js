@@ -17,7 +17,7 @@ Four.Setup.prototype = {
       far: 1000,
       positionX: 0,
       positionY: 0,
-      positionZ: 80
+      positionZ: 80 
     }
 
     var camera = new THREE.PerspectiveCamera(options.angle, options.aspect, options.near, options.far);
@@ -36,7 +36,7 @@ Four.Setup.prototype = {
       shadowMapSoft: true
     }
     var renderer = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: false
     })
     renderer.setClearColor(o.clearColor);
     renderer.setSize(window.innerWidth, window.innerHeight - 110)
