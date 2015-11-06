@@ -30,7 +30,7 @@ Four.Setup.prototype = {
     return camera
   },
   Renderer: function (options) {
-    o = options || {
+    var o = options || {
       clearColor: 0x050505,
       shadowMap: true,
       shadowMapSoft: true

@@ -1,7 +1,4 @@
 Four.Mesh = function () {
-
-
-
   this.init()
 }
 
@@ -26,7 +23,7 @@ Four.Mesh.prototype = {
       widthSegments = params.widthSegments || 16,
       heightSegments = params.heightSegments || 16,
       materialType = params.materialType || 'MeshPhongMaterial'
-    materialParams = params.materialParams || {
+    var materialParams = params.materialParams || {
       color: this.randomColor(),
       //ambient: 0x2d2d2d2d,
       specular: 0xb4b4b4b4,
@@ -41,7 +38,7 @@ Four.Mesh.prototype = {
     var material = new THREE[materialType](materialParams)
 
     var s = new THREE.Mesh(geometry, material)
-    s.position = new THREE.Vector3(x, y, z)
+    s.position.set(x, y, z)
 
     return s
   }

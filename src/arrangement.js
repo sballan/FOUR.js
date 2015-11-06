@@ -1,3 +1,4 @@
+var Four = {};
 Four.Arrangement = function() {
   this.debugMode = false;
 
