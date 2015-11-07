@@ -1,4 +1,4 @@
-Four.Setup.Renderer = function (options) {
+Four.Setup.prototype.Renderer = function (options) {
   var o = options || {
     clearColor: 0x050505,
     shadowMap: true,

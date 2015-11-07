@@ -1,8 +1,12 @@
 "use strict";
 
 var Four = {};
-Four.Setup = function () {};
-Function.Setup.Camera = function () {};
+
+Four.Setup = function (options) {
+  var o = options || {};
+  this.domSelector = "#webGL-container";
+};
+
 Four.Arrangement = function () {
   this.debugMode = true;
 
@@ -51,24 +55,6 @@ Four.Arrangement.prototype = {
 
 };
 
-Four.Setup.prototype.Camera = function (options) {
-  var o = options || {
-    angle: 45,
-    aspect: window.innerWidth / window.innerHeight,
-    near: 0.1,
-    far: 500,
-    positionX: 0,
-    positionY: 0,
-    positionZ: 80
-  };
-
-  var camera = new THREE.PerspectiveCamera(o.angle, o.aspect, o.near, o.far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(o.positionX, o.positionY, o.positionZ);
-
-  return camera;
-};
 Four.Mesh = function () {
   this.init();
 };
@@ -113,69 +99,77 @@ Four.Mesh.prototype = {
   }
 };
 
-Four.Setup = function (options) {
-  var o = options || {};
-  this.domSelector = "#webGL-container";
+Four.Setup.prototype.Camera = function (options) {
+  var o = options || {
+    angle: 45,
+    aspect: window.innerWidth / window.innerHeight,
+    near: 0.1,
+    far: 500,
+    positionX: 0,
+    positionY: 0,
+    positionZ: 80
+  };
+
+  var camera = new THREE.PerspectiveCamera(o.angle, o.aspect, o.near, o.far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(o.positionX, o.positionY, o.positionZ);
+
+  return camera;
 };
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
 
-Four.Setup.prototype = {
-  Scene: function Scene(options) {
-    var scene = new THREE.Scene();
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
 
-    return scene;
-  },
+  //$(domSelector).append(viz.scene.renderer.domElement);
 
-  Renderer: function Renderer(options) {
-    var o = options || {
-      clearColor: 0x050505,
-      shadowMap: true,
-      shadowMapSoft: true
-    };
-    var renderer = new THREE.WebGLRenderer({
-      antialias: false
-    });
-    renderer.setClearColor(o.clearColor);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = o.shadowMap;
-    renderer.shadowMapSoft = o.shadowMapSoft;
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (options) {
+  var o = options || {
+    positionX: 100,
+    positionY: -20,
+    positionZ: -30
+  };
 
-    //$(domSelector).append(renderer.domElement);
-    var selector = document.querySelector(this.domSelector);
-    selector.appendChild(renderer.domElement);
+  var light = new THREE.PointLight(0xFFFFFF);
 
-    return renderer;
-  },
-  Lights: function Lights(options) {
-    var o = options || {
-      positionX: 100,
-      positionY: -20,
-      positionZ: -30
-    };
+  light.position.x = o.positionX;
+  light.position.y = o.positionY;
+  light.position.z = o.positionZ;
 
-    var light = new THREE.PointLight(0xFFFFFF);
+  return light;
+};
+Four.Setup.prototype.Renderer = function (options) {
+  var o = options || {
+    clearColor: 0x050505,
+    shadowMap: true,
+    shadowMapSoft: true
+  };
+  var renderer = new THREE.WebGLRenderer({
+    antialias: false
+  });
+  renderer.setClearColor(o.clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = o.shadowMap;
+  renderer.shadowMapSoft = o.shadowMapSoft;
 
-    light.position.x = o.positionX;
-    light.position.y = o.positionY;
-    light.position.z = o.positionZ;
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
 
-    return light;
-  },
-  GUI: function GUI(options) {
-    var guiControls = new function () {
-      //this.rotationX = 0.01;
-      //this.rotationY = 0.1;
-      //this.rotationZ = 0.01;
-    }();
+  return renderer;
+};
+Four.Setup.prototype.Scene = function (options) {
+  var scene = new THREE.Scene();
 
-    var datGUI = new dat.GUI();
-    //The values can now be between 0 and 1 for all these
-    // datGUI.add(guiControls, 'rotationX', 0, 1)
-    //datGUI.add(guiControls, 'rotationY', 0, 1)
-    // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-    //$(domSelector).append(viz.scene.renderer.domElement);
-
-    return guiControls;
-  }
-
+  return scene;
 };

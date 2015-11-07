@@ -1,6 +1,3 @@
-var Four = {};
-Four.Setup = function() {};
-Function.Setup.Camera = function() {};
 Four.Arrangement = function() {
   this.debugMode = true;
 

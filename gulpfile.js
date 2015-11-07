@@ -24,7 +24,7 @@ gulp.task('lintJS', function () {
 });
 
 gulp.task('buildJS', ['lintJS'], function () {
-    return gulp.src(['./src/*.js'])
+    return gulp.src(['./src/**/*.js'])
         .pipe(plumber())
         .pipe(concat('four.js'))
         .pipe(babel())
