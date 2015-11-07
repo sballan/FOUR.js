@@ -16,6 +16,7 @@
     "tests"
   ],
   "dependencies": {
-    "TweenJS": "~0.6.1"
+    "TweenJS": "~0.6.1",
+    "three.js": "~0.72.0"
   }
 }

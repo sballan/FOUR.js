@@ -1,3 +1,5 @@
+var preset = new Four.Presets()
+
 var arrangement = new Four.Arrangement();
 var meshMaker = new Four.Mesh()
 

@@ -1,29 +1,18 @@
-Four.Arrangement = function() {
-  this.debugMode = true;
-
-  this.scene = null;
-  this.camera = null;
-  this.renderer = null;
-  this.lights = [];
-
-  //Call the init function when this is instantiated
-  this.init()
-}
-
 Four.Arrangement.prototype = {
-  init: function(options) {
+  //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
+  init: function(preset) {
     var setup = new Four.Setup()
-    this.scene = setup.Scene()
-    this.camera = setup.Camera()
-    this.renderer = setup.Renderer()
-    this.lights.push(setup.Lights())
-
+    this.scene = setup.Scene(preset.scene)
+    this.camera = setup.Camera(preset.camera)
+    this.renderer = setup.Renderer(preset.renderer)
+    this.lights = setup.Lights(preset.lights)
     this.addToScene(this.lights[0])
 
-    //Reads the flag for debug mode
-    if(this.debugMode) this.debug()
+    this.debug(preset.debugMode)
 
     var self = this
+    //This is a private render function.
+    //TODO decide if this should be private
     var render = function() {
       requestAnimationFrame(render)
       self.renderer.render(self.scene, self.camera);
@@ -31,9 +20,10 @@ Four.Arrangement.prototype = {
     }
     render()
   },
-  debug: function(options) {
-    if(options) this.debugMode = true
-      else this.debugMode = false
+  debug: function(preset) {
+    //If the preset value is value, do not use debug mode.
+    console.log(preset)
+    if(!preset) return
 
     var axis = new THREE.AxisHelper(10);
     this.scene.add(axis)

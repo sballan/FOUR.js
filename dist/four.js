@@ -1,31 +1,44 @@
-"use strict";
+'use strict';
 
 var Four = {};
 
 Four.Setup = function (options) {
-  var o = options || {};
+
   this.domSelector = "#webGL-container";
 };
 
-Four.Presets = function (options) {
-  var o = options || {};
+Four.Arrangement = function (preset) {
+  if (!preset) preset = new Four.Presets('defaults');
+  this.debugMode = true;
+
+  this.scene = null;
+  this.camera = null;
+  this.renderer = null;
+  this.lights = [];
+
+  //Call the init function when this is instantiated
+  this.init(preset);
 };
 
-Four.Setup.prototype.Camera = function (options) {
-  var o = options || {
-    angle: 45,
-    aspect: window.innerWidth / window.innerHeight,
-    near: 0.1,
-    far: 500,
-    positionX: 0,
-    positionY: 0,
-    positionZ: 80
-  };
+Four.Presets = function (options) {
+  if (!options) options = 'defaults';
 
-  var camera = new THREE.PerspectiveCamera(o.angle, o.aspect, o.near, o.far);
+  return this[options]();
+};
+
+Four.Setup.prototype.Camera = function (preset) {
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
 
   //Sets the camera to any position passed in the options
-  camera.position.set(o.positionX, o.positionY, o.positionZ);
+  camera.position.set(positionX, positionY, positionZ);
 
   return camera;
 };
@@ -46,34 +59,34 @@ Four.Setup.prototype.GUI = function (options) {
 
   return guiControls;
 };
-Four.Setup.prototype.Lights = function (options) {
-  var o = options || {
-    positionX: 100,
-    positionY: -20,
-    positionZ: -30
-  };
+Four.Setup.prototype.Lights = function (preset) {
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+  var color = preset.color;
 
-  var light = new THREE.PointLight(0xFFFFFF);
+  var light = new THREE.PointLight();
+  debugger;
 
-  light.position.x = o.positionX;
-  light.position.y = o.positionY;
-  light.position.z = o.positionZ;
+  light.position.x = positionX;
+  light.position.y = positionY;
+  light.position.z = positionZ;
 
-  return light;
+  return [light];
 };
-Four.Setup.prototype.Renderer = function (options) {
-  var o = options || {
-    clearColor: 0x050505,
-    shadowMap: true,
-    shadowMapSoft: true
-  };
+Four.Setup.prototype.Renderer = function (preset) {
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
   var renderer = new THREE.WebGLRenderer({
     antialias: false
   });
-  renderer.setClearColor(o.clearColor);
+  renderer.setClearColor(clearColor);
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = o.shadowMap;
-  renderer.shadowMapSoft = o.shadowMapSoft;
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
 
   var selector = document.querySelector(this.domSelector);
   selector.appendChild(renderer.domElement);
@@ -85,32 +98,21 @@ Four.Setup.prototype.Scene = function (options) {
 
   return scene;
 };
-Four.Arrangement = function () {
-  this.debugMode = true;
-
-  this.scene = null;
-  this.camera = null;
-  this.renderer = null;
-  this.lights = [];
-
-  //Call the init function when this is instantiated
-  this.init();
-};
-
 Four.Arrangement.prototype = {
-  init: function init(options) {
+  //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
+  init: function init(preset) {
     var setup = new Four.Setup();
-    this.scene = setup.Scene();
-    this.camera = setup.Camera();
-    this.renderer = setup.Renderer();
-    this.lights.push(setup.Lights());
-
+    this.scene = setup.Scene(preset.scene);
+    this.camera = setup.Camera(preset.camera);
+    this.renderer = setup.Renderer(preset.renderer);
+    this.lights = setup.Lights(preset.lights);
     this.addToScene(this.lights[0]);
 
-    //Reads the flag for debug mode
-    if (this.debugMode) this.debug();
+    this.debug(preset.debugMode);
 
     var self = this;
+    //This is a private render function.
+    //TODO decide if this should be private
     var render = function render() {
       requestAnimationFrame(render);
       self.renderer.render(self.scene, self.camera);
@@ -118,8 +120,10 @@ Four.Arrangement.prototype = {
     };
     render();
   },
-  debug: function debug(options) {
-    if (options) this.debugMode = true;else this.debugMode = false;
+  debug: function debug(preset) {
+    //If the preset value is value, do not use debug mode.
+    console.log(preset);
+    if (!preset) return;
 
     var axis = new THREE.AxisHelper(10);
     this.scene.add(axis);
@@ -181,4 +185,39 @@ Four.Mesh.prototype = {
   }
 };
 
-Four.Presets.prototype = {};
+//This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
+
+Four.Presets.prototype = {
+  defaults: function defaults() {
+    var settings = {
+      debugMode: true,
+      renderer: {
+        clearColor: 0x555555,
+        shadowMap: true,
+        shadowMapSoft: true,
+        antialias: false
+      },
+      lights: {
+        positionX: 100,
+        positionY: -20,
+        positionZ: -30,
+        color: 0xFFFFFF
+      },
+      camera: {
+        angle: 45,
+        aspect: window.innerWidth / window.innerHeight,
+        near: 0.1,
+        far: 500,
+        positionX: 0,
+        positionY: 0,
+        positionZ: 80
+      }
+
+    };
+    console.log(settings.lights.color);
+    return settings;
+  },
+  hey: function hey() {
+    console.log('Whata/');
+  }
+};
