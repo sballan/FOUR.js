@@ -1,5 +1,9 @@
-Four.Setup = function () {
+Four.Setup = function (options) {
+  var o = options || {
+
+  }
   this.domSelector = "#webGL-container";
+
 
 }
 
@@ -9,46 +13,7 @@ Four.Setup.prototype = {
 
     return scene
   },
-  Camera: function (options) {
-    options = options || {
-      angle: 75,
-      aspect: window.innerWidth / window.innerHeight,
-      near: 0.1,
-      far: 1000,
-      positionX: 0,
-      positionY: 0,
-      positionZ: 80 
-    }
 
-    var camera = new THREE.PerspectiveCamera(options.angle, options.aspect, options.near, options.far);
-
-    //Sets the camera to any position passed in the options
-    camera.position.x = options.positionX;
-    camera.position.y = options.positionY;
-    camera.position.z = options.positionZ;
-
-    return camera
-  },
-  Renderer: function (options) {
-    var o = options || {
-      clearColor: 0x050505,
-      shadowMap: true,
-      shadowMapSoft: true
-    }
-    var renderer = new THREE.WebGLRenderer({
-      antialias: false
-    })
-    renderer.setClearColor(o.clearColor);
-    renderer.setSize(window.innerWidth, window.innerHeight - 110)
-    renderer.shadowMap.enabled = o.shadowMap;
-    renderer.shadowMapSoft = o.shadowMapSoft;
-
-    //$(domSelector).append(renderer.domElement);
-    var selector = document.querySelector(this.domSelector);
-    selector.appendChild(renderer.domElement)
-
-    return renderer;
-  },
   Lights: function (options) {
     var o = options || {
       positionX: 100,

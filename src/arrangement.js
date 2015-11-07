@@ -1,4 +1,6 @@
 var Four = {};
+Four.Setup = function() {};
+Function.Setup.Camera = function() {};
 Four.Arrangement = function() {
   this.debugMode = true;
 
@@ -34,8 +36,17 @@ Four.Arrangement.prototype = {
     this.scene.add(grid);
   },
   addToScene: function(mesh) {
-  this.scene.add(mesh)
-}
+    this.scene.add(mesh)
+  },
+  render: function() {
+    var self = this
+    requestAnimationFrame(self.render)
+    self.renderer.render(self.scene, self.camera);
+    self.update()
+  },
+  update: function(func) {
+    if(!!func) func()
+  }
 
 
 

@@ -1,6 +1,8 @@
 "use strict";
 
 var Four = {};
+Four.Setup = function () {};
+Function.Setup.Camera = function () {};
 Four.Arrangement = function () {
   this.debugMode = true;
 
@@ -36,10 +38,37 @@ Four.Arrangement.prototype = {
   },
   addToScene: function addToScene(mesh) {
     this.scene.add(mesh);
+  },
+  render: function render() {
+    var self = this;
+    requestAnimationFrame(self.render);
+    self.renderer.render(self.scene, self.camera);
+    self.update();
+  },
+  update: function update(func) {
+    if (!!func) func();
   }
 
 };
 
+Four.Setup.prototype.Camera = function (options) {
+  var o = options || {
+    angle: 45,
+    aspect: window.innerWidth / window.innerHeight,
+    near: 0.1,
+    far: 500,
+    positionX: 0,
+    positionY: 0,
+    positionZ: 80
+  };
+
+  var camera = new THREE.PerspectiveCamera(o.angle, o.aspect, o.near, o.far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(o.positionX, o.positionY, o.positionZ);
+
+  return camera;
+};
 Four.Mesh = function () {
   this.init();
 };
@@ -54,16 +83,16 @@ Four.Mesh.prototype = {
     var b = Math.floor(Math.random() * (max - min + 1)) + min;
     return r + g + b;
   },
-  sphere: function sphere(params) {
-    if (!params) params = {};
-    var x = params.x || 0,
-        y = params.y || 0,
-        z = params.z || 0,
-        radius = params.radius || 5,
-        widthSegments = params.widthSegments || 16,
-        heightSegments = params.heightSegments || 16,
-        materialType = params.materialType || 'MeshPhongMaterial';
-    var materialParams = params.materialParams || {
+  sphere: function sphere(options) {
+    if (!options) options = {};
+    var x = options.x || 0,
+        y = options.y || 0,
+        z = options.z || 0,
+        radius = options.radius || 5,
+        widthSegments = options.widthSegments || 16,
+        heightSegments = options.heightSegments || 16,
+        materialType = options.materialType || 'MeshPhongMaterial';
+    var materialOptions = options.materialOptions || {
       color: this.randomColor(),
       //ambient: 0x2d2d2d2d,
       specular: 0xb4b4b4b4,
@@ -75,7 +104,7 @@ Four.Mesh.prototype = {
 
     var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
 
-    var material = new THREE[materialType](materialParams);
+    var material = new THREE[materialType](materialOptions);
 
     var s = new THREE.Mesh(geometry, material);
     s.position.set(x, y, z);
@@ -84,7 +113,8 @@ Four.Mesh.prototype = {
   }
 };
 
-Four.Setup = function () {
+Four.Setup = function (options) {
+  var o = options || {};
   this.domSelector = "#webGL-container";
 };
 
@@ -94,26 +124,7 @@ Four.Setup.prototype = {
 
     return scene;
   },
-  Camera: function Camera(options) {
-    options = options || {
-      angle: 75,
-      aspect: window.innerWidth / window.innerHeight,
-      near: 0.1,
-      far: 1000,
-      positionX: 0,
-      positionY: 0,
-      positionZ: 80
-    };
 
-    var camera = new THREE.PerspectiveCamera(options.angle, options.aspect, options.near, options.far);
-
-    //Sets the camera to any position passed in the options
-    camera.position.x = options.positionX;
-    camera.position.y = options.positionY;
-    camera.position.z = options.positionZ;
-
-    return camera;
-  },
   Renderer: function Renderer(options) {
     var o = options || {
       clearColor: 0x050505,
@@ -124,7 +135,7 @@ Four.Setup.prototype = {
       antialias: false
     });
     renderer.setClearColor(o.clearColor);
-    renderer.setSize(window.innerWidth, window.innerHeight - 110);
+    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = o.shadowMap;
     renderer.shadowMapSoft = o.shadowMapSoft;
 

@@ -14,16 +14,16 @@ Four.Mesh.prototype = {
     var b = (Math.floor(Math.random() * (max - min + 1)) + min);
     return r + g + b;
   },
-  sphere: function (params) {
-    if(!params) params = {};
-    var x = params.x || 0,
-      y = params.y || 0,
-      z = params.z || 0,
-      radius = params.radius || 5,
-      widthSegments = params.widthSegments || 16,
-      heightSegments = params.heightSegments || 16,
-      materialType = params.materialType || 'MeshPhongMaterial'
-    var materialParams = params.materialParams || {
+  sphere: function (options) {
+    if(!options) options = {};
+    var x = options.x || 0,
+      y = options.y || 0,
+      z = options.z || 0,
+      radius = options.radius || 5,
+      widthSegments = options.widthSegments || 16,
+      heightSegments = options.heightSegments || 16,
+      materialType = options.materialType || 'MeshPhongMaterial'
+    var materialOptions = options.materialOptions || {
       color: this.randomColor(),
       //ambient: 0x2d2d2d2d,
       specular: 0xb4b4b4b4,
@@ -35,7 +35,7 @@ Four.Mesh.prototype = {
 
     var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments)
 
-    var material = new THREE[materialType](materialParams)
+    var material = new THREE[materialType](materialOptions)
 
     var s = new THREE.Mesh(geometry, material)
     s.position.set(x, y, z)
