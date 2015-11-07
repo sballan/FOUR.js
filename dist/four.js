@@ -7,96 +7,8 @@ Four.Setup = function (options) {
   this.domSelector = "#webGL-container";
 };
 
-Four.Arrangement = function () {
-  this.debugMode = true;
-
-  this.scene = null;
-  this.camera = null;
-  this.renderer = null;
-  this.lights = [];
-
-  //Call the init function when this is instantiated
-  this.init();
-};
-
-Four.Arrangement.prototype = {
-  init: function init(options) {
-    var setup = new Four.Setup();
-    this.scene = setup.Scene();
-    this.camera = setup.Camera();
-    this.renderer = setup.Renderer();
-    this.lights.push(setup.Lights());
-
-    this.addToScene(this.lights[0]);
-
-    //Reads the flag for debug mode
-    if (this.debugMode) this.debug();
-  },
-  debug: function debug() {
-    var axis = new THREE.AxisHelper(10);
-    this.scene.add(axis);
-
-    var grid = new THREE.GridHelper(50, 5);
-    grid.setColors("rgb(255,0,0)", 0x222222);
-    this.scene.add(grid);
-  },
-  addToScene: function addToScene(mesh) {
-    this.scene.add(mesh);
-  },
-  render: function render() {
-    var self = this;
-    requestAnimationFrame(self.render);
-    self.renderer.render(self.scene, self.camera);
-    self.update();
-  },
-  update: function update(func) {
-    if (!!func) func();
-  }
-
-};
-
-Four.Mesh = function () {
-  this.init();
-};
-
-Four.Mesh.prototype = {
-  init: function init() {},
-  randomColor: function randomColor() {
-    var min = 64;
-    var max = 224;
-    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
-    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
-    var b = Math.floor(Math.random() * (max - min + 1)) + min;
-    return r + g + b;
-  },
-  sphere: function sphere(options) {
-    if (!options) options = {};
-    var x = options.x || 0,
-        y = options.y || 0,
-        z = options.z || 0,
-        radius = options.radius || 5,
-        widthSegments = options.widthSegments || 16,
-        heightSegments = options.heightSegments || 16,
-        materialType = options.materialType || 'MeshPhongMaterial';
-    var materialOptions = options.materialOptions || {
-      color: this.randomColor(),
-      //ambient: 0x2d2d2d2d,
-      specular: 0xb4b4b4b4,
-      shininess: 2,
-      reflectivity: 2
-    };
-
-    var center = new THREE.Vector3(x, y, z);
-
-    var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-
-    var material = new THREE[materialType](materialOptions);
-
-    var s = new THREE.Mesh(geometry, material);
-    s.position.set(x, y, z);
-
-    return s;
-  }
+Four.Presets = function (options) {
+  var o = options || {};
 };
 
 Four.Setup.prototype.Camera = function (options) {
@@ -173,3 +85,100 @@ Four.Setup.prototype.Scene = function (options) {
 
   return scene;
 };
+Four.Arrangement = function () {
+  this.debugMode = true;
+
+  this.scene = null;
+  this.camera = null;
+  this.renderer = null;
+  this.lights = [];
+
+  //Call the init function when this is instantiated
+  this.init();
+};
+
+Four.Arrangement.prototype = {
+  init: function init(options) {
+    var setup = new Four.Setup();
+    this.scene = setup.Scene();
+    this.camera = setup.Camera();
+    this.renderer = setup.Renderer();
+    this.lights.push(setup.Lights());
+
+    this.addToScene(this.lights[0]);
+
+    //Reads the flag for debug mode
+    if (this.debugMode) this.debug();
+
+    var self = this;
+    var render = function render() {
+      requestAnimationFrame(render);
+      self.renderer.render(self.scene, self.camera);
+      self.update();
+    };
+    render();
+  },
+  debug: function debug(options) {
+    if (options) this.debugMode = true;else this.debugMode = false;
+
+    var axis = new THREE.AxisHelper(10);
+    this.scene.add(axis);
+
+    var grid = new THREE.GridHelper(50, 5);
+    grid.setColors("rgb(255,0,0)", 0x222222);
+    this.scene.add(grid);
+  },
+  addToScene: function addToScene(mesh) {
+    this.scene.add(mesh);
+  },
+  update: function update(func) {
+    if (typeof func === 'function') func();
+  }
+
+};
+
+Four.Mesh = function () {
+  this.init();
+};
+
+Four.Mesh.prototype = {
+  init: function init() {},
+  randomColor: function randomColor() {
+    var min = 64;
+    var max = 224;
+    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
+    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
+    var b = Math.floor(Math.random() * (max - min + 1)) + min;
+    return r + g + b;
+  },
+  sphere: function sphere(options) {
+    if (!options) options = {};
+    var x = options.x || 0,
+        y = options.y || 0,
+        z = options.z || 0,
+        radius = options.radius || 5,
+        widthSegments = options.widthSegments || 16,
+        heightSegments = options.heightSegments || 16,
+        materialType = options.materialType || 'MeshPhongMaterial';
+    var materialOptions = options.materialOptions || {
+      color: this.randomColor(),
+      //ambient: 0x2d2d2d2d,
+      specular: 0xb4b4b4b4,
+      shininess: 2,
+      reflectivity: 2
+    };
+
+    var center = new THREE.Vector3(x, y, z);
+
+    var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+
+    var material = new THREE[materialType](materialOptions);
+
+    var s = new THREE.Mesh(geometry, material);
+    s.position.set(x, y, z);
+
+    return s;
+  }
+};
+
+Four.Presets.prototype = {};

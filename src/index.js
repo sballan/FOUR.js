@@ -6,3 +6,9 @@ Four.Setup = function (options) {
   this.domSelector = "#webGL-container";
 
 }
+
+Four.Presets = function(options) {
+  var o = options || {
+
+  }
+}

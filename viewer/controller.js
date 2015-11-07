@@ -15,5 +15,3 @@ controls.addEventListener( 'change', arrangement.update );
 //controls.update();
 
 camera.lookAt(scene.position);
-
-arrangement.render()

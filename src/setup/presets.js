@@ -1,0 +1,3 @@
+Four.Presets.prototype = {
+
+}

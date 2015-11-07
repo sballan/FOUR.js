@@ -6,7 +6,6 @@ Four.Arrangement = function() {
   this.renderer = null;
   this.lights = [];
 
-
   //Call the init function when this is instantiated
   this.init()
 }
@@ -23,8 +22,19 @@ Four.Arrangement.prototype = {
 
     //Reads the flag for debug mode
     if(this.debugMode) this.debug()
+
+    var self = this
+    var render = function() {
+      requestAnimationFrame(render)
+      self.renderer.render(self.scene, self.camera);
+      self.update()
+    }
+    render()
   },
-  debug: function() {
+  debug: function(options) {
+    if(options) this.debugMode = true
+      else this.debugMode = false
+
     var axis = new THREE.AxisHelper(10);
     this.scene.add(axis)
 
@@ -35,14 +45,8 @@ Four.Arrangement.prototype = {
   addToScene: function(mesh) {
     this.scene.add(mesh)
   },
-  render: function() {
-    var self = this
-    requestAnimationFrame(self.render)
-    self.renderer.render(self.scene, self.camera);
-    self.update()
-  },
   update: function(func) {
-    if(!!func) func()
+    if(typeof func === 'function') func()
   }
 
 
