@@ -1,170 +1,285 @@
-"use strict";
+'use strict';
 
 var Four = {};
-Four.Arrangement = function () {
-  this.debugMode = true;
 
-  this.scene = null;
-  this.camera = null;
-  this.renderer = null;
-  this.lights = [];
+Four.Setup = function (options) {
 
-  //Call the init function when this is instantiated
-  this.init();
+	this.domSelector = "#webGL-container";
 };
 
-Four.Arrangement.prototype = {
-  init: function init(options) {
-    var setup = new Four.Setup();
-    this.scene = setup.Scene();
-    this.camera = setup.Camera();
-    this.renderer = setup.Renderer();
-    this.lights.push(setup.Lights());
+Four.Arrangement = function (preset) {
+	if (!preset) preset = new Four.Presets('defaults');
+	this.debugMode = true;
 
-    this.addToScene(this.lights[0]);
+	this.scene = null;
+	this.camera = null;
+	this.renderer = null;
+	this.lights = [];
 
-    //Reads the flag for debug mode
-    if (this.debugMode) this.debug();
-  },
-  debug: function debug() {
-    var axis = new THREE.AxisHelper(10);
-    this.scene.add(axis);
-
-    var grid = new THREE.GridHelper(50, 5);
-    grid.setColors("rgb(255,0,0)", 0x222222);
-    this.scene.add(grid);
-  },
-  addToScene: function addToScene(mesh) {
-    this.scene.add(mesh);
-  }
-
+	//Call the init function when this is instantiated
+	this.init(preset);
 };
 
+Four.Presets = function (options) {
+	if (!options) options = 'defaults';
+
+	return this[options]();
+};
+
+Four.Help = function () {
+	var self = this;
+	function response(question) {
+		if (!self.__proto__.hasOwnProperty(question) || !question) {
+			self.generic();
+			// console.log(self.__proto__.hasOwnProperty('help'))
+		} else {
+				self[question]();
+			}
+	}
+	return response;
+};
+
+Four.Setup.prototype.Camera = function (preset) {
+	var angle = preset.angle;
+	var aspect = preset.aspect;
+	var near = preset.near;
+	var far = preset.far;
+	var positionX = preset.positionX;
+	var positionY = preset.positionY;
+	var positionZ = preset.positionZ;
+
+	var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
+
+	//Sets the camera to any position passed in the options
+	camera.position.set(positionX, positionY, positionZ);
+
+	return camera;
+};
+Four.Setup.prototype.GUI = function (options) {
+	var guiControls = new function () {
+		//this.rotationX = 0.01;
+		//this.rotationY = 0.1;
+		//this.rotationZ = 0.01;
+	}();
+
+	var datGUI = new dat.GUI();
+	//The values can now be between 0 and 1 for all these
+	// datGUI.add(guiControls, 'rotationX', 0, 1)
+	//datGUI.add(guiControls, 'rotationY', 0, 1)
+	// datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+	//$(domSelector).append(viz.scene.renderer.domElement);
+
+	return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+	var positionX = preset.positionX;
+	var positionY = preset.positionY;
+	var positionZ = preset.positionZ;
+	var color = preset.color;
+
+	var light = new THREE.PointLight();
+
+	light.position.set(positionX, positionY, positionZ);
+
+	return [light];
+};
+Four.Setup.prototype.Renderer = function (preset) {
+	var clearColor = preset.clearColor;
+	var shadowMap = preset.shadowMap;
+	var shadowMapSoft = preset.shadowMapSoft;
+	var antialias = preset.antialias;
+
+	var renderer = new THREE.WebGLRenderer({
+		antialias: false
+	});
+	renderer.setClearColor(clearColor);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.shadowMap.enabled = shadowMap;
+	renderer.shadowMapSoft = shadowMapSoft;
+
+	var selector = document.querySelector(this.domSelector);
+	selector.appendChild(renderer.domElement);
+
+	return renderer;
+};
+Four.Setup.prototype.Scene = function (preset) {
+	var scene;
+
+	if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
+
+	return scene;
+};
 Four.Mesh = function () {
-  this.init();
+	this.init();
 };
 
 Four.Mesh.prototype = {
-  init: function init() {},
-  randomColor: function randomColor() {
-    var min = 64;
-    var max = 224;
-    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
-    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
-    var b = Math.floor(Math.random() * (max - min + 1)) + min;
-    return r + g + b;
-  },
-  sphere: function sphere(params) {
-    if (!params) params = {};
-    var x = params.x || 0,
-        y = params.y || 0,
-        z = params.z || 0,
-        radius = params.radius || 5,
-        widthSegments = params.widthSegments || 16,
-        heightSegments = params.heightSegments || 16,
-        materialType = params.materialType || 'MeshPhongMaterial';
-    var materialParams = params.materialParams || {
-      color: this.randomColor(),
-      //ambient: 0x2d2d2d2d,
-      specular: 0xb4b4b4b4,
-      shininess: 2,
-      reflectivity: 2
-    };
+	init: function init() {},
+	make: function make(string, preset) {
+		if (!preset) preset = Four.Presets['default'].mesh;
 
-    var center = new THREE.Vector3(x, y, z);
+		var makeNewMesh = this[string];
+		var type = preset[string];
 
-    var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+		return makeNewMesh(type);
+	}
 
-    var material = new THREE[materialType](materialParams);
-
-    var s = new THREE.Mesh(geometry, material);
-    s.position.set(x, y, z);
-
-    return s;
-  }
 };
 
-Four.Setup = function () {
-  this.domSelector = "#webGL-container";
+Four.Mesh.prototype.sphere = function (preset) {
+	var x = preset.x,
+	    y = preset.y,
+	    z = preset.z,
+	    radius = preset.radius,
+	    widthSegments = preset.widthSegments,
+	    heightSegments = preset.heightSegments,
+	    materialType = preset.materialType,
+	    materialpreset = preset.materialOptions;
+
+	var center = new THREE.Vector3(x, y, z);
+
+	var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+	var material = new THREE[materialType](materialOptions);
+
+	// New mesh may be physics enabled or not physics enabled
+	var s;
+	if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
+
+	s.position.set(x, y, z);
+
+	return s;
+};
+Four.Arrangement.prototype = {
+	//The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
+	init: function init(preset) {
+		var setup = new Four.Setup();
+		this.scene = setup.Scene(preset.scene);
+		this.camera = setup.Camera(preset.camera);
+		this.renderer = setup.Renderer(preset.renderer);
+		this.lights = setup.Lights(preset.lights);
+		this.addToScene(this.lights[0]);
+
+		this.debug(preset.debugMode);
+
+		var self = this;
+		//This is a private render function.
+		//TODO decide if this should be private
+		var render = function render() {
+			requestAnimationFrame(render);
+			self.renderer.render(self.scene, self.camera);
+			self.update();
+		};
+		render();
+	},
+	debug: function debug(preset) {
+		//If the preset value is value, do not use debug mode.
+		console.log(preset);
+		if (!preset) return;
+
+		var axis = new THREE.AxisHelper(10);
+		this.scene.add(axis);
+
+		var grid = new THREE.GridHelper(50, 5);
+		grid.setColors("rgb(255,0,0)", 0x222222);
+		this.scene.add(grid);
+	},
+	addToScene: function addToScene(mesh) {
+		this.scene.add(mesh);
+	},
+	update: function update(func) {
+		if (typeof func === 'function') func();
+	}
+
 };
 
-Four.Setup.prototype = {
-  Scene: function Scene(options) {
-    var scene = new THREE.Scene();
+//I think it would be cool to write a function that can act as a reference for the developer.  As I imagine it, during the development the developer puts a Four.Help function in global scope, and can then pass different strings to it to find out different things about the particular scene being worked on or the frameworks in general.
 
-    return scene;
-  },
-  Camera: function Camera(options) {
-    options = options || {
-      angle: 75,
-      aspect: window.innerWidth / window.innerHeight,
-      near: 0.1,
-      far: 1000,
-      positionX: 0,
-      positionY: 0,
-      positionZ: 80
-    };
+Four.Help.prototype = {
+	generic: function generic() {
+		var s = "I'm sorry, but the query you have entered does not seem to be valid.  Try 'help' for details.";
 
-    var camera = new THREE.PerspectiveCamera(options.angle, options.aspect, options.near, options.far);
+		console.log(s);
+	},
+	help: function help() {
+		var s = "Here are the currently supported queries:\n\n";
+		for (var prop in this.__proto__) {
+			if (prop === 'generic') continue;
+			s += prop + "\n";
+		}
+		console.log(s);
+	},
+	scene: function scene() {
+		var s = 'The children in this scene are: ';
+		s += Four.Arrangement.scene;
+		console.log(s);
+	}
 
-    //Sets the camera to any position passed in the options
-    camera.position.x = options.positionX;
-    camera.position.y = options.positionY;
-    camera.position.z = options.positionZ;
+};
 
-    return camera;
-  },
-  Renderer: function Renderer(options) {
-    var o = options || {
-      clearColor: 0x050505,
-      shadowMap: true,
-      shadowMapSoft: true
-    };
-    var renderer = new THREE.WebGLRenderer({
-      antialias: false
-    });
-    renderer.setClearColor(o.clearColor);
-    renderer.setSize(window.innerWidth, window.innerHeight - 110);
-    renderer.shadowMap.enabled = o.shadowMap;
-    renderer.shadowMapSoft = o.shadowMapSoft;
+//This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
 
-    //$(domSelector).append(renderer.domElement);
-    var selector = document.querySelector(this.domSelector);
-    selector.appendChild(renderer.domElement);
+Four.Presets.prototype = {
+	defaults: function defaults() {
+		var settings = {
+			debugMode: true,
+			renderer: {
+				clearColor: 0x555555,
+				shadowMap: true,
+				shadowMapSoft: true,
+				antialias: false
+			},
+			lights: {
+				positionX: 100,
+				positionY: -20,
+				positionZ: -30,
+				color: 0xFFFFFF
+			},
+			camera: {
+				angle: 45,
+				aspect: window.innerWidth / window.innerHeight,
+				near: 0.1,
+				far: 500,
+				positionX: 0,
+				positionY: 0,
+				positionZ: 80
+			},
+			scene: {
+				physics: false
+			},
+			mesh: {
+				sphere: {
+					physics: false,
+					x: 0,
+					y: 0,
+					z: 0,
+					radius: 5,
+					widthSegments: 16,
+					heightSegments: 16,
+					materialType: 'MeshPhongMaterial',
+					materialOptions: {
+						color: this.randomColor(),
+						specular: 0xb4b4b4b4,
+						shininess: 2,
+						reflectivity: 2
+					}
 
-    return renderer;
-  },
-  Lights: function Lights(options) {
-    var o = options || {
-      positionX: 100,
-      positionY: -20,
-      positionZ: -30
-    };
+				}
+			}
 
-    var light = new THREE.PointLight(0xFFFFFF);
-
-    light.position.x = o.positionX;
-    light.position.y = o.positionY;
-    light.position.z = o.positionZ;
-
-    return light;
-  },
-  GUI: function GUI(options) {
-    var guiControls = new function () {
-      //this.rotationX = 0.01;
-      //this.rotationY = 0.1;
-      //this.rotationZ = 0.01;
-    }();
-
-    var datGUI = new dat.GUI();
-    //The values can now be between 0 and 1 for all these
-    // datGUI.add(guiControls, 'rotationX', 0, 1)
-    //datGUI.add(guiControls, 'rotationY', 0, 1)
-    // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-    //$(domSelector).append(viz.scene.renderer.domElement);
-
-    return guiControls;
-  }
-
+		};
+		console.log(settings.lights.color);
+		return settings;
+	},
+	hey: function hey() {
+		console.log('Whata/');
+	},
+	randomColor: function randomColor() {
+		var min = 64;
+		var max = 224;
+		var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
+		var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
+		var b = Math.floor(Math.random() * (max - min + 1)) + min;
+		return r + g + b;
+	}
 };
