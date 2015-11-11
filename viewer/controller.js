@@ -1,6 +1,9 @@
 var preset = new Four.Presets()
+var helper = new Four.Help()
 
 var arrangement = new Four.Arrangement();
+
+
 var meshMaker = new Four.Mesh()
 
 var scene = arrangement.scene
@@ -14,6 +17,9 @@ arrangement.addToScene(sphere)
 //Setup Orbit Controls
 var controls = new THREE.OrbitControls( camera, renderer.domElement );
 controls.addEventListener( 'change', arrangement.update );
-//controls.update();
+controls.update();
 
 camera.lookAt(scene.position);
+
+
+arrangement.render()

@@ -5,11 +5,9 @@ Four.Setup.prototype.Lights = function (preset) {
   var color = preset.color;
 
   var light = new THREE.PointLight();
-  debugger
 
-  light.position.x = positionX;
-  light.position.y = positionY;
-  light.position.z = positionZ;
+
+  light.position.set(positionX, positionY, positionZ)
 
   return [light]
 }

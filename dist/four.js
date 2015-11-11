@@ -26,6 +26,19 @@ Four.Presets = function (options) {
   return this[options]();
 };
 
+Four.Help = function () {
+  var self = this;
+  function response(question) {
+    if (!self.__proto__.hasOwnProperty(question) || !question) {
+      self.generic();
+      // console.log(self.__proto__.hasOwnProperty('help'))
+    } else {
+        self[question]();
+      }
+  }
+  return response;
+};
+
 Four.Setup.prototype.Camera = function (preset) {
   var angle = preset.angle;
   var aspect = preset.aspect;
@@ -66,11 +79,8 @@ Four.Setup.prototype.Lights = function (preset) {
   var color = preset.color;
 
   var light = new THREE.PointLight();
-  debugger;
 
-  light.position.x = positionX;
-  light.position.y = positionY;
-  light.position.z = positionZ;
+  light.position.set(positionX, positionY, positionZ);
 
   return [light];
 };
@@ -141,6 +151,30 @@ Four.Arrangement.prototype = {
 
 };
 
+//I think it would be cool to write a function that can act as a reference for the developer.  As I imagine it, during the development the developer puts a Four.Help function in global scope, and can then pass different strings to it to find out different things about the particular scene being worked on or the frameworks in general.
+
+Four.Help.prototype = {
+  generic: function generic() {
+    var s = "I'm sorry, but the query you have entered does not seem to be valid.  Try 'help' for details.";
+
+    console.log(s);
+  },
+  help: function help() {
+    var s = "Here are the currently supported queries:\n\n";
+    for (var prop in this.__proto__) {
+      if (prop === 'generic') continue;
+      s += prop + "\n";
+    }
+    console.log(s);
+  },
+  scene: function scene() {
+    var s = 'The children in this scene are: ';
+    s += Four.Arrangement.scene;
+    console.log(s);
+  }
+
+};
+
 Four.Mesh = function () {
   this.init();
 };
@@ -186,7 +220,6 @@ Four.Mesh.prototype = {
 };
 
 //This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
-
 Four.Presets.prototype = {
   defaults: function defaults() {
     var settings = {
