@@ -1,4 +1,6 @@
 Four.Setup.prototype.Lights = function (preset) {
+	if(!preset) preset = new Four.Presets('defaults').lights
+
   var positionX = preset.positionX;
   var positionY = preset.positionY;
   var positionZ = preset.positionZ;

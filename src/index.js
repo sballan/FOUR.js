@@ -21,6 +21,7 @@ Four.Arrangement = function(preset) {
 }
 
 Four.Presets = function(options) {
+	// options will be a string that will determine which preset is returned.
 	if(!options) options = 'defaults';
 
 	return this[options]()

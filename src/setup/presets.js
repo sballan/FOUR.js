@@ -1,7 +1,5 @@
 //This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
 
-
-
 Four.Presets.prototype = {
 	defaults: function() {
 		var settings = {

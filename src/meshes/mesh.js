@@ -1,6 +1,6 @@
 Four.Mesh = {
   make:function(string, preset) {
-    if(!preset) preset = Four.Presets.prototype.defaults().mesh;
+    if(!preset) preset = new Four.Presets('defaults').mesh;
 
     // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
     var makeNewMesh = Four.Mesh[string];
