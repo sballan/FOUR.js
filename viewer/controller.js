@@ -1,10 +1,11 @@
+
 var preset = new Four.Presets()
 var helper = new Four.Help()
 
 var arrangement = new Four.Arrangement();
 
 
-var meshMaker = new Four.Mesh()
+var meshMaker = new Four.Mesh.make('sphere')
 
 var scene = arrangement.scene
 var camera = arrangement.camera

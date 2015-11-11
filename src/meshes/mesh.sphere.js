@@ -1,4 +1,5 @@
-Four.Mesh.prototype.sphere = function(preset) {
+Four.Mesh.sphere = function(preset) {
+		if(!preset) preset = Four.Presets.prototype.defaults.mesh.sphere
 		var x = preset.x,
 			y = preset.y,
 			z = preset.z,

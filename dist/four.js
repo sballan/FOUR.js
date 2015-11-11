@@ -110,24 +110,23 @@ Four.Setup.prototype.Scene = function (preset) {
 
 	return scene;
 };
-Four.Mesh = function () {
-	this.init();
-};
-
-Four.Mesh.prototype = {
+Four.Mesh = {
 	init: function init() {},
 	make: function make(string, preset) {
-		if (!preset) preset = Four.Presets['default'].mesh;
+		if (!preset) preset = Four.Presets.prototype.defaults().mesh;
 
-		var makeNewMesh = this[string];
+		console.log(Four);
+		var makeNewMesh = Four.Mesh[string];
 		var type = preset[string];
-
+		console.log('makeNewMesh', makeNewMesh);
+		console.log("type", type);
 		return makeNewMesh(type);
 	}
 
 };
 
-Four.Mesh.prototype.sphere = function (preset) {
+Four.Mesh.sphere = function (preset) {
+	if (!preset) preset = Four.Presets.prototype.defaults.mesh.sphere;
 	var x = preset.x,
 	    y = preset.y,
 	    z = preset.z,
