@@ -7,7 +7,7 @@ Four.Mesh.sphere = function(preset) {
 			widthSegments = preset.widthSegments,
 			heightSegments = preset.heightSegments,
 			materialType = preset.materialType,
-			materialpreset = preset.materialOptions
+			materialOptions = preset.materialOptions
 
 		var center = new THREE.Vector3(x, y, z)
 

@@ -1,7 +1,9 @@
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function(preset) {
+    if(!preset) preset = Four.Presets.prototype.defaults()
     var setup = new Four.Setup()
+
     this.scene = setup.Scene(preset.scene)
     this.camera = setup.Camera(preset.camera)
     this.renderer = setup.Renderer(preset.renderer)
@@ -21,8 +23,11 @@ Four.Arrangement.prototype = {
     render()
   },
   debug: function(preset) {
-    //If the preset value is value, do not use debug mode.
-    console.log(preset)
+    if(preset === undefined) {
+      preset = Four.Presets.prototype.defaults().debugMode
+    }
+
+    //If the preset value is false, do not use debug mode.
     if(!preset) return
 
     var axis = new THREE.AxisHelper(10);
@@ -35,6 +40,7 @@ Four.Arrangement.prototype = {
   addToScene: function(mesh) {
     this.scene.add(mesh)
   },
+  // Whatever function is passed in here is called every time the scene updates.
   update: function(func) {
     if(typeof func === 'function') func()
   }

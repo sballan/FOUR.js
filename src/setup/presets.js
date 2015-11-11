@@ -10,7 +10,7 @@ Four.Presets.prototype = {
 				clearColor: 0x555555,
     		shadowMap: true,
     		shadowMapSoft: true,
-    		antialias: false
+    		antialias: true
 			},
 			lights: {
 				positionX: 100,
@@ -51,11 +51,7 @@ Four.Presets.prototype = {
 			}
 
 		}
-		console.log(settings.lights.color)
 		return settings
-	},
-	hey: function() {
-		console.log('Whata/')
 	},
 	randomColor: function () {
     var min = 64;
