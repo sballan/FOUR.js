@@ -1,4 +1,5 @@
-Four.Mesh.prototype.sphere = function(preset) {
+Four.Mesh.sphere = function(preset) {
+		if(!preset) preset = new Four.Presets('defaults').mesh.sphere
 		var x = preset.x,
 			y = preset.y,
 			z = preset.z,
@@ -6,7 +7,7 @@ Four.Mesh.prototype.sphere = function(preset) {
 			widthSegments = preset.widthSegments,
 			heightSegments = preset.heightSegments,
 			materialType = preset.materialType,
-			materialpreset = preset.materialOptions
+			materialOptions = preset.materialOptions
 
 		var center = new THREE.Vector3(x, y, z)
 

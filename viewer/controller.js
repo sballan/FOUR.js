@@ -1,16 +1,15 @@
+
 var preset = new Four.Presets()
 var helper = new Four.Help()
 
 var arrangement = new Four.Arrangement();
 
 
-var meshMaker = new Four.Mesh()
-
 var scene = arrangement.scene
 var camera = arrangement.camera
 var renderer = arrangement.renderer
 
-var sphere = meshMaker.sphere()
+var sphere = new Four.Mesh.make('sphere')
 
 arrangement.addToScene(sphere)
 
@@ -20,6 +19,3 @@ controls.addEventListener( 'change', arrangement.update );
 controls.update();
 
 camera.lookAt(scene.position);
-
-
-arrangement.render()

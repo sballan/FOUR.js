@@ -21,6 +21,7 @@ Four.Arrangement = function (preset) {
 };
 
 Four.Presets = function (options) {
+	// options will be a string that will determine which preset is returned.
 	if (!options) options = 'defaults';
 
 	return this[options]();
@@ -39,7 +40,55 @@ Four.Help = function () {
 	return response;
 };
 
+Four.Mesh = {
+	make: function make(string, preset) {
+		if (!preset) preset = new Four.Presets('defaults').mesh;
+
+		// makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+		var makeNewMesh = Four.Mesh[string];
+
+		// type will become the presets that should be passed to this new mesh
+		var type = preset[string];
+
+		return makeNewMesh(type);
+	}
+
+};
+
+Four.Mesh.sphere = function (preset) {
+	if (!preset) preset = new Four.Presets('defaults').mesh.sphere;
+	var x = preset.x,
+	    y = preset.y,
+	    z = preset.z,
+	    radius = preset.radius,
+	    widthSegments = preset.widthSegments,
+	    heightSegments = preset.heightSegments,
+	    materialType = preset.materialType,
+	    materialOptions = preset.materialOptions;
+
+	var center = new THREE.Vector3(x, y, z);
+
+	var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+	var material = new THREE[materialType](materialOptions);
+
+	// New mesh may be physics enabled or not physics enabled
+	var s;
+	if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
+
+	s.position.set(x, y, z);
+
+	return s;
+};
+Four.Presets.prototype.simplePhysics = function () {
+	var settings = new Four.Presets('defaults');
+
+	settings.scene.physics = true;
+	settings.mesh.sphere.physics = true;
+
+	return settings;
+};
 Four.Setup.prototype.Camera = function (preset) {
+	if (!preset) preset = new Four.Presets('defaults').camera;
 	var angle = preset.angle;
 	var aspect = preset.aspect;
 	var near = preset.near;
@@ -73,6 +122,8 @@ Four.Setup.prototype.GUI = function (options) {
 	return guiControls;
 };
 Four.Setup.prototype.Lights = function (preset) {
+	if (!preset) preset = new Four.Presets('defaults').lights;
+
 	var positionX = preset.positionX;
 	var positionY = preset.positionY;
 	var positionZ = preset.positionZ;
@@ -85,6 +136,8 @@ Four.Setup.prototype.Lights = function (preset) {
 	return [light];
 };
 Four.Setup.prototype.Renderer = function (preset) {
+	if (!preset) preset = new Four.Presets('defaults').renderer;
+
 	var clearColor = preset.clearColor;
 	var shadowMap = preset.shadowMap;
 	var shadowMapSoft = preset.shadowMapSoft;
@@ -104,56 +157,18 @@ Four.Setup.prototype.Renderer = function (preset) {
 	return renderer;
 };
 Four.Setup.prototype.Scene = function (preset) {
-	var scene;
+	if (!preset) preset = new Four.Presets('defaults').scene;
 
+	var scene; // Physics will be set on next line
 	if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
 
 	return scene;
-};
-Four.Mesh = function () {
-	this.init();
-};
-
-Four.Mesh.prototype = {
-	init: function init() {},
-	make: function make(string, preset) {
-		if (!preset) preset = Four.Presets['default'].mesh;
-
-		var makeNewMesh = this[string];
-		var type = preset[string];
-
-		return makeNewMesh(type);
-	}
-
-};
-
-Four.Mesh.prototype.sphere = function (preset) {
-	var x = preset.x,
-	    y = preset.y,
-	    z = preset.z,
-	    radius = preset.radius,
-	    widthSegments = preset.widthSegments,
-	    heightSegments = preset.heightSegments,
-	    materialType = preset.materialType,
-	    materialpreset = preset.materialOptions;
-
-	var center = new THREE.Vector3(x, y, z);
-
-	var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-	var material = new THREE[materialType](materialOptions);
-
-	// New mesh may be physics enabled or not physics enabled
-	var s;
-	if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
-
-	s.position.set(x, y, z);
-
-	return s;
 };
 Four.Arrangement.prototype = {
 	//The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
 	init: function init(preset) {
 		var setup = new Four.Setup();
+
 		this.scene = setup.Scene(preset.scene);
 		this.camera = setup.Camera(preset.camera);
 		this.renderer = setup.Renderer(preset.renderer);
@@ -173,8 +188,11 @@ Four.Arrangement.prototype = {
 		render();
 	},
 	debug: function debug(preset) {
-		//If the preset value is value, do not use debug mode.
-		console.log(preset);
+		if (preset === undefined) {
+			preset = new Four.Presets('defaults').debugMode;
+		}
+
+		//If the preset value is false, do not use debug mode.
 		if (!preset) return;
 
 		var axis = new THREE.AxisHelper(10);
@@ -187,6 +205,7 @@ Four.Arrangement.prototype = {
 	addToScene: function addToScene(mesh) {
 		this.scene.add(mesh);
 	},
+	// Whatever function is passed in here is called every time the scene updates.
 	update: function update(func) {
 		if (typeof func === 'function') func();
 	}
@@ -227,7 +246,7 @@ Four.Presets.prototype = {
 				clearColor: 0x555555,
 				shadowMap: true,
 				shadowMapSoft: true,
-				antialias: false
+				antialias: true
 			},
 			lights: {
 				positionX: 100,
@@ -268,11 +287,7 @@ Four.Presets.prototype = {
 			}
 
 		};
-		console.log(settings.lights.color);
 		return settings;
-	},
-	hey: function hey() {
-		console.log('Whata/');
 	},
 	randomColor: function randomColor() {
 		var min = 64;

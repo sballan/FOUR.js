@@ -1,7 +1,5 @@
 //This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
 
-
-
 Four.Presets.prototype = {
 	defaults: function() {
 		var settings = {
@@ -10,7 +8,7 @@ Four.Presets.prototype = {
 				clearColor: 0x555555,
     		shadowMap: true,
     		shadowMapSoft: true,
-    		antialias: false
+    		antialias: true
 			},
 			lights: {
 				positionX: 100,
@@ -51,11 +49,7 @@ Four.Presets.prototype = {
 			}
 
 		}
-		console.log(settings.lights.color)
 		return settings
-	},
-	hey: function() {
-		console.log('Whata/')
 	},
 	randomColor: function () {
     var min = 64;
