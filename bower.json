@@ -18,6 +18,7 @@
   "dependencies": {
     "TweenJS": "~0.6.1",
     "three.js": "~0.72.0",
-    "Physijs": "physijs#*"
+    "Physijs": "physijs#*",
+    "tween.js": "tweenjs#~16.3.1"
   }
 }

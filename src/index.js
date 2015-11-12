@@ -29,9 +29,10 @@ Four.Preset = function(options) {
 	return this[options]()
 }
 
-Four.Help = function() {
+Four.Help = function(arrangement) {
 	var self = this
 	function response(question) {
+		var arrangement = arrangement;
 		if(!self.__proto__.hasOwnProperty(question) || !question) {
 				self.generic()
 				// console.log(self.__proto__.hasOwnProperty('help'))
@@ -42,6 +43,6 @@ Four.Help = function() {
 	return response
 }
 
-Four.Behavior = function() {
-
-}
+// Four.Behavior = function() {
+//
+// }

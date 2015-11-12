@@ -15,23 +15,9 @@ Four.Preset.prototype = {
     		antialias: true
 			},
 			updates: [
-				{func: function firstFunction() {
-							console.log("hey")
-					}
-				},
-				{func: function secondFunction() {
-							console.log("hey")
-					}
-				},
+				{func: TWEEN.update
+				}
 			],
-			// updates: {
-			// 	firstFunc: function() {
-			// 		console.log("Apply worked!")
-			// 	},
-			// 	secondFunc: function() {
-			// 		console.log("Apply worked again!")
-			// 	}
-			// },
 			lights: {
 				positionX: 100,
     		positionY: -20,
@@ -70,8 +56,9 @@ Four.Preset.prototype = {
 				}
 			},
 			behaviors: {
-				moveToward: {
-					rate: 1
+				moveTo: {
+					rate: 1,
+					time: 30000
 				}
 			}
 

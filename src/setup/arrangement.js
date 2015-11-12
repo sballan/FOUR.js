@@ -18,12 +18,13 @@ Four.Arrangement.prototype = {
     // Turn on debug mode if the preset says to.
     this.debug(preset.debugMode)
 
-    var redraw = self.redraw.bind(self)
+    //Bind context to avoid confusion/errors with Orbit Controls
+    var update = self.update.bind(self)
+
     //Sets up Orbit Controls
-    var controls;
     if(preset.controls.OrbitControls) {
-       controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
-      controls.addEventListener( 'change', redraw );
+       var controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+      controls.addEventListener( 'change', update );
       controls.update()
     }
 
@@ -31,23 +32,16 @@ Four.Arrangement.prototype = {
     var render = function() {
       requestAnimationFrame(render)
       self.renderer.render(self.scene, self.camera);
-      redraw()
+      update()
     }
     render()
 
   },
   // Whatever function is passed in here is called every time the scene updates.
-  redraw: function() {
-    console.log("self.updates: ", this.updates, this)
+  update: function() {
     this.updates.forEach(function(update) {
-      console.log(update)
       update.func()
     })
-
-    // for(var update in this.updates) {
-    //   this.updates[update]()
-    // }
-
 
   },
   debug: function(preset) {
