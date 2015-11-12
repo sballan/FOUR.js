@@ -48,22 +48,17 @@ Four.Help = function (arrangement) {
 //
 // }
 
+var p = {};
 Four.Behavior = {
   moveTo: function moveTo(mesh, time) {
+    var tl = new TimelineMax();
     var preset = new Four.Preset('defaults').behaviors.moveTo;
-    var self = this;
-    // We want the rate to be per 1/60 of a second
-    // var time = time || preset.time;
-    var position = Four.Utils.toPoints(self.position);
+    //Give time a fallback value
+    var time = time || preset.time;
+
     var target = Four.Utils.toPoints(mesh.position);
 
-    var tween = new TWEEN.Tween(position).to(target, time);
-
-    // tween.onUpdate(function() {
-    //   self.position.set(position.x, position.y, position.z)
-    // })
-
-    tween.start();
+    TweenMax.to(this.position, time, target);
   }
 
   // moveTo: function(mesh, time) {
@@ -78,15 +73,6 @@ Four.Behavior = {
   //   var tween = new TWEEN.Tween(position).to(target, time)
   //
   // }
-};
-
-Four.Preset.prototype.simplePhysics = function () {
-  var settings = new Four.Preset('defaults');
-
-  settings.scene.physics = true;
-  settings.mesh.sphere.physics = true;
-
-  return settings;
 };
 
 Four.Mesh = {
@@ -134,6 +120,15 @@ Four.Mesh.sphere = function (preset) {
   s.position.set(x, y, z);
 
   return s;
+};
+
+Four.Preset.prototype.simplePhysics = function () {
+  var settings = new Four.Preset('defaults');
+
+  settings.scene.physics = true;
+  settings.mesh.sphere.physics = true;
+
+  return settings;
 };
 
 Four.Setup.prototype.Camera = function (preset) {
@@ -253,6 +248,9 @@ Four.Arrangement.prototype = {
       self.renderer.render(self.scene, self.camera);
       update();
     };
+
+    TweenMax.ticker.addEventListener("tick", update);
+    //TimelineMax.ticker.addEventListener("tick", update)
     render();
   },
   // Whatever function is passed in here is called every time the scene updates.
@@ -322,7 +320,7 @@ Four.Preset.prototype = {
         shadowMapSoft: true,
         antialias: true
       },
-      updates: [{ func: TWEEN.update
+      updates: [{ func: function func() {}
       }],
       lights: {
         positionX: 100,
@@ -364,7 +362,7 @@ Four.Preset.prototype = {
       behaviors: {
         moveTo: {
           rate: 1,
-          time: 30000
+          time: 2
         }
       }
 

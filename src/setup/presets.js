@@ -15,7 +15,7 @@ Four.Preset.prototype = {
     		antialias: true
 			},
 			updates: [
-				{func: TWEEN.update
+				{func: function(){}
 				}
 			],
 			lights: {
@@ -58,7 +58,7 @@ Four.Preset.prototype = {
 			behaviors: {
 				moveTo: {
 					rate: 1,
-					time: 30000
+					time: 2
 				}
 			}
 

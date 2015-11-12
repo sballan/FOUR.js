@@ -1,20 +1,19 @@
+var p = {}
 Four.Behavior = {
   moveTo: function(mesh, time) {
+    var tl = new TimelineMax()
     var preset = new Four.Preset('defaults').behaviors.moveTo
-    var self = this;
-    // We want the rate to be per 1/60 of a second
-    // var time = time || preset.time;
-    var position = Four.Utils.toPoints(self.position)
+    //Give time a fallback value
+    var time = time || preset.time;
+
     var target = Four.Utils.toPoints(mesh.position)
 
-    var tween = new TWEEN.Tween(position).to(target, time)
+    TweenMax.to(this.position, time, target)
 
-    // tween.onUpdate(function() {
-    //   self.position.set(position.x, position.y, position.z)
-    // })
 
-    tween.start()
   }
+
+
 
   // moveTo: function(mesh, time) {
   //   var preset = new Four.Preset('defaults').behaviors.moveTo

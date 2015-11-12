@@ -34,6 +34,9 @@ Four.Arrangement.prototype = {
       self.renderer.render(self.scene, self.camera);
       update()
     }
+
+    TweenMax.ticker.addEventListener("tick", update)
+    //TimelineMax.ticker.addEventListener("tick", update)
     render()
 
   },
