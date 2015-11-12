@@ -5,10 +5,11 @@ var Four = {};
 Four.Setup = function (options) {
 
   this.domSelector = "#webGL-container";
+  Four.Preset;
 };
 
 Four.Arrangement = function (preset) {
-  if (!preset) preset = new Four.Presets('defaults');
+  if (!preset) preset = new Four.Preset('defaults');
   this.debugMode = true;
 
   this.scene = null;
@@ -20,7 +21,7 @@ Four.Arrangement = function (preset) {
   this.init(preset);
 };
 
-Four.Presets = function (options) {
+Four.Preset = function (options) {
   // options will be a string that will determine which preset is returned.
   if (!options) options = 'defaults';
 
@@ -93,141 +94,6 @@ Four.Presets.prototype.simplePhysics = function () {
   settings.mesh.sphere.physics = true;
 
   return settings;
-};
-Four.Arrangement.prototype = {
-  //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
-  init: function init(preset) {
-    var setup = new Four.Setup();
-
-    this.scene = setup.Scene(preset.scene);
-    this.camera = setup.Camera(preset.camera);
-    this.renderer = setup.Renderer(preset.renderer);
-    this.lights = setup.Lights(preset.lights);
-    this.addToScene(this.lights[0]);
-
-    this.debug(preset.debugMode);
-
-    var self = this;
-    //This is a private render function.
-    //TODO decide if this should be private
-    var render = function render() {
-      requestAnimationFrame(render);
-      // self.scene.simulate()
-      self.renderer.render(self.scene, self.camera);
-      self.update();
-    };
-    render();
-  },
-  debug: function debug(preset) {
-    if (preset === undefined) {
-      preset = new Four.Presets('defaults').debugMode;
-    }
-
-    //If the preset value is false, do not use debug mode.
-    if (!preset) return;
-
-    var axis = new THREE.AxisHelper(10);
-    this.scene.add(axis);
-
-    var grid = new THREE.GridHelper(50, 5);
-    grid.setColors("rgb(255,0,0)", 0x222222);
-    this.scene.add(grid);
-  },
-  addToScene: function addToScene(mesh) {
-    this.scene.add(mesh);
-  },
-  // Whatever function is passed in here is called every time the scene updates.
-  update: function update(func) {
-    if (typeof func === 'function') func();
-  }
-
-};
-
-//I think it would be cool to write a function that can act as a reference for the developer.  As I imagine it, during the development the developer puts a Four.Help function in global scope, and can then pass different strings to it to find out different things about the particular scene being worked on or the frameworks in general.
-
-Four.Help.prototype = {
-  generic: function generic() {
-    var s = "I'm sorry, but the query you have entered does not seem to be valid.  Try 'help' for details.";
-
-    console.log(s);
-  },
-  help: function help() {
-    var s = "Here are the currently supported queries:\n\n";
-    for (var prop in this.__proto__) {
-      if (prop === 'generic') continue;
-      s += prop + "\n";
-    }
-    console.log(s);
-  },
-  scene: function scene() {
-    var s = 'The children in this scene are: ';
-    console.log(s);
-    console.log(Four.Arrangement.scene);
-  }
-
-};
-
-//This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
-
-Four.Presets.prototype = {
-  defaults: function defaults() {
-    var settings = {
-      debugMode: true,
-      renderer: {
-        clearColor: 0x555555,
-        shadowMap: true,
-        shadowMapSoft: true,
-        antialias: true
-      },
-      lights: {
-        positionX: 100,
-        positionY: -20,
-        positionZ: -30,
-        color: 0xFFFFFF
-      },
-      camera: {
-        angle: 45,
-        aspect: window.innerWidth / window.innerHeight,
-        near: 0.1,
-        far: 500,
-        positionX: 0,
-        positionY: 0,
-        positionZ: 80
-      },
-      scene: {
-        physics: false
-      },
-      mesh: {
-        sphere: {
-          physics: false,
-          x: 0,
-          y: 0,
-          z: 0,
-          radius: 5,
-          widthSegments: 16,
-          heightSegments: 16,
-          materialType: 'MeshPhongMaterial',
-          materialOptions: {
-            color: this.randomColor(),
-            specular: 0xb4b4b4b4,
-            shininess: 2,
-            reflectivity: 2
-          }
-
-        }
-      }
-
-    };
-    return settings;
-  },
-  randomColor: function randomColor() {
-    var min = 64;
-    var max = 224;
-    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
-    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
-    var b = Math.floor(Math.random() * (max - min + 1)) + min;
-    return r + g + b;
-  }
 };
 Four.Setup.prototype.Camera = function (preset) {
   if (!preset) preset = new Four.Presets('defaults').camera;
@@ -305,4 +171,139 @@ Four.Setup.prototype.Scene = function (preset) {
   if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
 
   return scene;
+};
+Four.Arrangement.prototype = {
+  //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
+  init: function init(preset) {
+    var setup = new Four.Setup();
+
+    this.scene = setup.Scene(preset.scene);
+    this.camera = setup.Camera(preset.camera);
+    this.renderer = setup.Renderer(preset.renderer);
+    this.lights = setup.Lights(preset.lights);
+    this.addToScene(this.lights[0]);
+
+    this.debug(preset.debugMode);
+
+    var self = this;
+    //This is a private render function.
+    //TODO decide if this should be private
+    var render = function render() {
+      requestAnimationFrame(render);
+      // self.scene.simulate()
+      self.renderer.render(self.scene, self.camera);
+      self.update();
+    };
+    render();
+  },
+  debug: function debug(preset) {
+    if (preset === undefined) {
+      preset = new Four.Presets('defaults').debugMode;
+    }
+
+    //If the preset value is false, do not use debug mode.
+    if (!preset) return;
+
+    var axis = new THREE.AxisHelper(10);
+    this.scene.add(axis);
+
+    var grid = new THREE.GridHelper(50, 5);
+    grid.setColors("rgb(255,0,0)", 0x222222);
+    this.scene.add(grid);
+  },
+  addToScene: function addToScene(mesh) {
+    this.scene.add(mesh);
+  },
+  // Whatever function is passed in here is called every time the scene updates.
+  update: function update(func) {
+    if (typeof func === 'function') func();
+  }
+
+};
+
+//I think it would be cool to write a function that can act as a reference for the developer.  As I imagine it, during the development the developer puts a Four.Help function in global scope, and can then pass different strings to it to find out different things about the particular scene being worked on or the frameworks in general.
+
+Four.Help.prototype = {
+  generic: function generic() {
+    var s = "I'm sorry, but the query you have entered does not seem to be valid.  Try 'help' for details.";
+
+    console.log(s);
+  },
+  help: function help() {
+    var s = "Here are the currently supported queries:\n\n";
+    for (var prop in this.__proto__) {
+      if (prop === 'generic') continue;
+      s += prop + "\n";
+    }
+    console.log(s);
+  },
+  scene: function scene() {
+    var s = 'The children in this scene are: ';
+    console.log(s);
+    console.log(Four.Arrangement.scene);
+  }
+
+};
+
+//This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
+
+Four.Preset.prototype = {
+  defaults: function defaults() {
+    var settings = {
+      debugMode: true,
+      renderer: {
+        clearColor: 0x555555,
+        shadowMap: true,
+        shadowMapSoft: true,
+        antialias: true
+      },
+      lights: {
+        positionX: 100,
+        positionY: -20,
+        positionZ: -30,
+        color: 0xFFFFFF
+      },
+      camera: {
+        angle: 45,
+        aspect: window.innerWidth / window.innerHeight,
+        near: 0.1,
+        far: 500,
+        positionX: 0,
+        positionY: 0,
+        positionZ: 80
+      },
+      scene: {
+        physics: false
+      },
+      mesh: {
+        sphere: {
+          physics: false,
+          x: 0,
+          y: 0,
+          z: 0,
+          radius: 5,
+          widthSegments: 16,
+          heightSegments: 16,
+          materialType: 'MeshPhongMaterial',
+          materialOptions: {
+            color: this.randomColor(),
+            specular: 0xb4b4b4b4,
+            shininess: 2,
+            reflectivity: 2
+          }
+
+        }
+      }
+
+    };
+    return settings;
+  },
+  randomColor: function randomColor() {
+    var min = 64;
+    var max = 224;
+    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
+    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
+    var b = Math.floor(Math.random() * (max - min + 1)) + min;
+    return r + g + b;
+  }
 };

@@ -1,5 +1,6 @@
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
+  Four.Preset
   init: function(preset) {
     var setup = new Four.Setup()
 
@@ -24,7 +25,7 @@ Four.Arrangement.prototype = {
   },
   debug: function(preset) {
     if(preset === undefined) {
-      preset = new Four.Presets('defaults').debugMode
+      preset = new Four.Preset('defaults').debugMode
     }
 
     //If the preset value is false, do not use debug mode.
@@ -48,5 +49,3 @@ Four.Arrangement.prototype = {
 
 
 }
-
-

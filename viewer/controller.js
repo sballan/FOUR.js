@@ -1,5 +1,5 @@
-
-var preset = new Four.Presets()
+// Make a new Preset,
+var preset = new Four.Preset()
 preset.scene.physics = true;
 preset.mesh.sphere.physics = true;
 
