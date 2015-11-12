@@ -14,28 +14,24 @@ Four.Preset.prototype = {
     		shadowMapSoft: true,
     		antialias: true
 			},
-			render: [
-				function(){
-					function firstFunction() {
-						console.log("hey")
+			updates: [
+				{func: function firstFunction() {
+							console.log("hey")
 					}
-					firstFunc()
 				},
-				function(){
-					function secondFunction() {
-						console.log("hey hey")
+				{func: function secondFunction() {
+							console.log("hey")
 					}
-					firstFunc()
-				}
+				},
 			],
-			updates: {
-				firstFunc: function() {
-					console.log("Apply worked!")
-				},
-				secondFunc: function() {
-					console.log("Apply worked again!")
-				}
-			},
+			// updates: {
+			// 	firstFunc: function() {
+			// 		console.log("Apply worked!")
+			// 	},
+			// 	secondFunc: function() {
+			// 		console.log("Apply worked again!")
+			// 	}
+			// },
 			lights: {
 				positionX: 100,
     		positionY: -20,
@@ -71,6 +67,11 @@ Four.Preset.prototype = {
 						reflectivity: 2
 					}
 
+				}
+			},
+			behaviors: {
+				moveToward: {
+					rate: 1
 				}
 			}
 

@@ -1,6 +1,7 @@
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function(preset) {
+    var self = this
     var setup = new Four.Setup()
 
     this.scene = setup.Scene(preset.scene)
@@ -10,43 +11,42 @@ Four.Arrangement.prototype = {
     this.addToScene(this.lights[0])
 
     this.updates = preset.updates
-
-
     // Make camera point at the scene, no matter where it is.
     if(preset.controls.lookAtScene) {
       this.camera.lookAt(this.scene.position);
     }
-
     // Turn on debug mode if the preset says to.
     this.debug(preset.debugMode)
 
+    var redraw = self.redraw.bind(self)
     //Sets up Orbit Controls
+    var controls;
     if(preset.controls.OrbitControls) {
-      var controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
-      controls.addEventListener( 'change', this.update );
-      controls.update();
+       controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+      controls.addEventListener( 'change', redraw );
+      controls.update()
     }
 
     // This is the internal render function.  Additional functions can be called from the public update funciton.
-    var self = this
     var render = function() {
       requestAnimationFrame(render)
       self.renderer.render(self.scene, self.camera);
-      self.update(preset.render.update)
+      redraw()
     }
     render()
 
   },
   // Whatever function is passed in here is called every time the scene updates.
-  update: function(func) {
-    if(typeof func === 'function') func()
-    // this.updates.forEach(function(update) {
-    //   update()
-    // })
+  redraw: function() {
+    console.log("self.updates: ", this.updates, this)
+    this.updates.forEach(function(update) {
+      console.log(update)
+      update.func()
+    })
 
-    for(var update in this.updates) {
-      this.updates[update]()
-    }
+    // for(var update in this.updates) {
+    //   this.updates[update]()
+    // }
 
 
   },
