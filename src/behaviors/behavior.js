@@ -9,9 +9,9 @@ Four.Behavior = {
 
     var tween = new TWEEN.Tween(position).to(target, time)
 
-    tween.onUpdate(function() {
-      self.position.set(position.x, position.y, position.z)
-    })
+    // tween.onUpdate(function() {
+    //   self.position.set(position.x, position.y, position.z)
+    // })
 
     tween.start()
   }

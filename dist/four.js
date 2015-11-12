@@ -48,6 +48,47 @@ Four.Help = function (arrangement) {
 //
 // }
 
+Four.Behavior = {
+  moveTo: function moveTo(mesh, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    var self = this;
+    // We want the rate to be per 1/60 of a second
+    // var time = time || preset.time;
+    var position = Four.Utils.toPoints(self.position);
+    var target = Four.Utils.toPoints(mesh.position);
+
+    var tween = new TWEEN.Tween(position).to(target, time);
+
+    // tween.onUpdate(function() {
+    //   self.position.set(position.x, position.y, position.z)
+    // })
+
+    tween.start();
+  }
+
+  // moveTo: function(mesh, time) {
+  //   var preset = new Four.Preset('defaults').behaviors.moveTo
+  //   // We want the rate to be per 1/60 of a second
+  //   var rate = rate / 60 || preset.rate / 60;
+  //   var position = this.position;
+  //   var target = mesh.position
+  //   var distance = position.distanceTo(target)
+  //   var time = distace / rate
+  //
+  //   var tween = new TWEEN.Tween(position).to(target, time)
+  //
+  // }
+};
+
+Four.Preset.prototype.simplePhysics = function () {
+  var settings = new Four.Preset('defaults');
+
+  settings.scene.physics = true;
+  settings.mesh.sphere.physics = true;
+
+  return settings;
+};
+
 Four.Mesh = {
   make: function make(string, preset) {
     if (!preset) preset = new Four.Preset('defaults').mesh;
@@ -95,45 +136,85 @@ Four.Mesh.sphere = function (preset) {
   return s;
 };
 
-Four.Behavior = {
-  moveTo: function moveTo(mesh, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    var self = this;
-    // We want the rate to be per 1/60 of a second
-    // var time = time || preset.time;
-    var position = Four.Utils.toPoints(self.position);
-    var target = Four.Utils.toPoints(mesh.position);
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
 
-    var tween = new TWEEN.Tween(position).to(target, time);
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
 
-    tween.onUpdate(function () {
-      self.position.set(position.x, position.y, position.z);
-    });
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
 
-    tween.start();
-  }
-
-  // moveTo: function(mesh, time) {
-  //   var preset = new Four.Preset('defaults').behaviors.moveTo
-  //   // We want the rate to be per 1/60 of a second
-  //   var rate = rate / 60 || preset.rate / 60;
-  //   var position = this.position;
-  //   var target = mesh.position
-  //   var distance = position.distanceTo(target)
-  //   var time = distace / rate
-  //
-  //   var tween = new TWEEN.Tween(position).to(target, time)
-  //
-  // }
+  return camera;
 };
 
-Four.Preset.prototype.simplePhysics = function () {
-  var settings = new Four.Preset('defaults');
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
 
-  settings.scene.physics = true;
-  settings.mesh.sphere.physics = true;
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
 
-  return settings;
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').lights;
+
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+  var color = preset.color;
+
+  var light = new THREE.PointLight();
+
+  light.position.set(positionX, positionY, positionZ);
+
+  return [light];
+};
+
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').renderer;
+
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: false
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
+};
+
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').scene;
+
+  var scene; // Physics will be set on next line
+  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
+
+  return scene;
 };
 
 Four.Arrangement.prototype = {
@@ -312,85 +393,4 @@ Four.Utils = {
     return p;
   }
 
-};
-
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').lights;
-
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-  var color = preset.color;
-
-  var light = new THREE.PointLight();
-
-  light.position.set(positionX, positionY, positionZ);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').renderer;
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: false
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').scene;
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
-
-  return scene;
 };
