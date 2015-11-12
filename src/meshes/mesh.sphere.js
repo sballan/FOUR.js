@@ -1,5 +1,5 @@
 Four.Mesh.sphere = function(preset) {
-		if(!preset) preset = new Four.Presets('defaults').mesh.sphere
+		if(!preset) preset = new Four.Preset('defaults').mesh.sphere
 		var x = preset.x,
 			y = preset.y,
 			z = preset.z,

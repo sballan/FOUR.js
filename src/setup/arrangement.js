@@ -1,6 +1,7 @@
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function(preset) {
+    var self = this
     var setup = new Four.Setup()
 
     this.scene = setup.Scene(preset.scene)
@@ -9,22 +10,43 @@ Four.Arrangement.prototype = {
     this.lights = setup.Lights(preset.lights)
     this.addToScene(this.lights[0])
 
+    this.updates = preset.updates
+    // Make camera point at the scene, no matter where it is.
+    if(preset.controls.lookAtScene) {
+      this.camera.lookAt(this.scene.position);
+    }
+    // Turn on debug mode if the preset says to.
     this.debug(preset.debugMode)
 
-    var self = this
-    //This is a private render function.
-    //TODO decide if this should be private
+    //Bind context to avoid confusion/errors with Orbit Controls
+    var update = self.update.bind(self)
+
+    //Sets up Orbit Controls
+    if(preset.controls.OrbitControls) {
+       var controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+      controls.addEventListener( 'change', update );
+      controls.update()
+    }
+
+    // This is the internal render function.  Additional functions can be called from the public update funciton.
     var render = function() {
       requestAnimationFrame(render)
-      // self.scene.simulate()
       self.renderer.render(self.scene, self.camera);
-      self.update()
+      update()
     }
     render()
+
+  },
+  // Whatever function is passed in here is called every time the scene updates.
+  update: function() {
+    this.updates.forEach(function(update) {
+      update.func()
+    })
+
   },
   debug: function(preset) {
     if(preset === undefined) {
-      preset = new Four.Presets('defaults').debugMode
+      preset = new Four.Preset('defaults').debugMode
     }
 
     //If the preset value is false, do not use debug mode.
@@ -39,14 +61,8 @@ Four.Arrangement.prototype = {
   },
   addToScene: function(mesh) {
     this.scene.add(mesh)
-  },
-  // Whatever function is passed in here is called every time the scene updates.
-  update: function(func) {
-    if(typeof func === 'function') func()
   }
 
 
 
 }
-
-

@@ -1,15 +1,23 @@
 //This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
 
-Four.Presets.prototype = {
+Four.Preset.prototype = {
 	defaults: function() {
 		var settings = {
 			debugMode: true,
+			controls: {
+				OrbitControls: true,
+				lookAtScene: true
+			},
 			renderer: {
 				clearColor: 0x555555,
     		shadowMap: true,
     		shadowMapSoft: true,
     		antialias: true
 			},
+			updates: [
+				{func: TWEEN.update
+				}
+			],
 			lights: {
 				positionX: 100,
     		positionY: -20,
@@ -45,6 +53,12 @@ Four.Presets.prototype = {
 						reflectivity: 2
 					}
 
+				}
+			},
+			behaviors: {
+				moveTo: {
+					rate: 1,
+					time: 30000
 				}
 			}
 
