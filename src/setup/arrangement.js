@@ -16,6 +16,7 @@ Four.Arrangement.prototype = {
     //TODO decide if this should be private
     var render = function() {
       requestAnimationFrame(render)
+      // self.scene.simulate()
       self.renderer.render(self.scene, self.camera);
       self.update()
     }
