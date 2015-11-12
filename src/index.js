@@ -4,7 +4,6 @@ var Four = {};
 Four.Setup = function (options) {
 
 	this.domSelector = "#webGL-container";
-Four.Preset
 }
 
 Four.Arrangement = function(preset) {
@@ -42,7 +41,3 @@ Four.Help = function(arrangement) {
 	}
 	return response
 }
-
-// Four.Behavior = function() {
-//
-// }

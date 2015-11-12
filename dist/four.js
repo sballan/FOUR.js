@@ -5,7 +5,6 @@ var Four = {};
 Four.Setup = function (options) {
 
   this.domSelector = "#webGL-container";
-  Four.Preset;
 };
 
 Four.Arrangement = function (preset) {
@@ -42,93 +41,6 @@ Four.Help = function (arrangement) {
       }
   }
   return response;
-};
-
-// Four.Behavior = function() {
-//
-// }
-
-var p = {};
-Four.Behavior = {
-  moveTo: function moveTo(mesh, time) {
-    var tl = new TimelineMax();
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    var time = time || preset.time;
-
-    var target = Four.Utils.toPoints(mesh.position);
-
-    TweenMax.to(this.position, time, target);
-  }
-
-  // moveTo: function(mesh, time) {
-  //   var preset = new Four.Preset('defaults').behaviors.moveTo
-  //   // We want the rate to be per 1/60 of a second
-  //   var rate = rate / 60 || preset.rate / 60;
-  //   var position = this.position;
-  //   var target = mesh.position
-  //   var distance = position.distanceTo(target)
-  //   var time = distace / rate
-  //
-  //   var tween = new TWEEN.Tween(position).to(target, time)
-  //
-  // }
-};
-
-Four.Mesh = {
-  make: function make(string, preset) {
-    if (!preset) preset = new Four.Preset('defaults').mesh;
-
-    // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-    var makeNewMesh = Four.Mesh[string];
-
-    // type will become the presets that should be passed to this new mesh
-    var type = preset[string];
-
-    return makeNewMesh(type);
-  },
-  //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-  processArgs: function processArgs() {
-    if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-      var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-      return point;
-    } else return false;
-  }
-
-};
-
-Four.Mesh.sphere = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh.sphere;
-  var x = preset.x,
-      y = preset.y,
-      z = preset.z,
-      radius = preset.radius,
-      widthSegments = preset.widthSegments,
-      heightSegments = preset.heightSegments,
-      materialType = preset.materialType,
-      materialOptions = preset.materialOptions;
-
-  var center = new THREE.Vector3(x, y, z);
-
-  var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-  var material = new THREE[materialType](materialOptions);
-
-  // New mesh may be physics enabled or not physics enabled
-  var s;
-  if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
-
-  s.position.set(x, y, z);
-
-  return s;
-};
-
-Four.Preset.prototype.simplePhysics = function () {
-  var settings = new Four.Preset('defaults');
-
-  settings.scene.physics = true;
-  settings.mesh.sphere.physics = true;
-
-  return settings;
 };
 
 Four.Setup.prototype.Camera = function (preset) {
@@ -210,6 +122,84 @@ Four.Setup.prototype.Scene = function (preset) {
   if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
 
   return scene;
+};
+
+Four.Preset.prototype.simplePhysics = function () {
+  var settings = new Four.Preset('defaults');
+
+  settings.scene.physics = true;
+  settings.mesh.sphere.physics = true;
+
+  return settings;
+};
+
+Four.Mesh = {
+  make: function make(string, preset) {
+    if (!preset) preset = new Four.Preset('defaults').mesh;
+
+    // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+    var makeNewMesh = Four.Mesh[string];
+
+    // type will become the presets that should be passed to this new mesh
+    var type = preset[string];
+
+    return makeNewMesh(type);
+  },
+  //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+  processArgs: function processArgs() {
+    if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+      var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+      return point;
+    } else return false;
+  }
+
+};
+
+Four.Mesh.sphere = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh.sphere;
+  var x = preset.x,
+      y = preset.y,
+      z = preset.z,
+      radius = preset.radius,
+      widthSegments = preset.widthSegments,
+      heightSegments = preset.heightSegments,
+      materialType = preset.materialType,
+      materialOptions = preset.materialOptions;
+
+  var center = new THREE.Vector3(x, y, z);
+
+  var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  var material = new THREE[materialType](materialOptions);
+
+  // New mesh may be physics enabled or not physics enabled
+  var s;
+  if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
+
+  s.position.set(x, y, z);
+
+  return s;
+};
+
+var p = {};
+Four.Behavior = {
+  moveTo: function moveTo(mesh, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    var target = Four.Utils.toPoints(mesh.position);
+
+    TweenMax.to(this.position, time, target);
+  },
+  moveFrom: function moveFrom(time, target) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    TweenMax.from(this.position, time, target);
+  }
+
 };
 
 Four.Arrangement.prototype = {
@@ -304,6 +294,17 @@ Four.Help.prototype = {
 
 };
 
+Four.Pipeline = {
+  TweenPipeline: [],
+  BasicPipeline: [],
+  pipe: function pipe() {
+    TweenPipeline.forEach(function (tween) {
+      tween.start();
+    });
+  },
+  mainTimeline: new TimelineMax()
+};
+
 //This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
 
 Four.Preset.prototype = {
@@ -362,6 +363,10 @@ Four.Preset.prototype = {
       behaviors: {
         moveTo: {
           rate: 1,
+          time: 2
+        },
+        moveFrom: {
+          target: { x: -4, y: -5, z: 3 },
           time: 2
         }
       }
