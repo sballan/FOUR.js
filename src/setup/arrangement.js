@@ -9,18 +9,46 @@ Four.Arrangement.prototype = {
     this.lights = setup.Lights(preset.lights)
     this.addToScene(this.lights[0])
 
+    this.updates = preset.updates
+
+
+    // Make camera point at the scene, no matter where it is.
+    if(preset.controls.lookAtScene) {
+      this.camera.lookAt(this.scene.position);
+    }
+
+    // Turn on debug mode if the preset says to.
     this.debug(preset.debugMode)
 
+    //Sets up Orbit Controls
+    if(preset.controls.OrbitControls) {
+      var controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+      controls.addEventListener( 'change', this.update );
+      controls.update();
+    }
+
+    // This is the internal render function.  Additional functions can be called from the public update funciton.
     var self = this
-    //This is a private render function.
-    //TODO decide if this should be private
     var render = function() {
       requestAnimationFrame(render)
-      // self.scene.simulate()
       self.renderer.render(self.scene, self.camera);
-      self.update()
+      self.update(preset.render.update)
     }
     render()
+
+  },
+  // Whatever function is passed in here is called every time the scene updates.
+  update: function(func) {
+    if(typeof func === 'function') func()
+    // this.updates.forEach(function(update) {
+    //   update()
+    // })
+
+    for(var update in this.updates) {
+      this.updates[update]()
+    }
+
+
   },
   debug: function(preset) {
     if(preset === undefined) {
@@ -39,10 +67,6 @@ Four.Arrangement.prototype = {
   },
   addToScene: function(mesh) {
     this.scene.add(mesh)
-  },
-  // Whatever function is passed in here is called every time the scene updates.
-  update: function(func) {
-    if(typeof func === 'function') func()
   }
 
 

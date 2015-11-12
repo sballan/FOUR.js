@@ -1,0 +1,3 @@
+Four.Behavior.prototype = {
+
+}

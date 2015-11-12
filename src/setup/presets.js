@@ -4,11 +4,37 @@ Four.Preset.prototype = {
 	defaults: function() {
 		var settings = {
 			debugMode: true,
+			controls: {
+				OrbitControls: true,
+				lookAtScene: true
+			},
 			renderer: {
 				clearColor: 0x555555,
     		shadowMap: true,
     		shadowMapSoft: true,
     		antialias: true
+			},
+			render: [
+				function(){
+					function firstFunction() {
+						console.log("hey")
+					}
+					firstFunc()
+				},
+				function(){
+					function secondFunction() {
+						console.log("hey hey")
+					}
+					firstFunc()
+				}
+			],
+			updates: {
+				firstFunc: function() {
+					console.log("Apply worked!")
+				},
+				secondFunc: function() {
+					console.log("Apply worked again!")
+				}
 			},
 			lights: {
 				positionX: 100,

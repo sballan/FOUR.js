@@ -16,6 +16,8 @@ Four.Arrangement = function(preset) {
 	this.renderer = null;
 	this.lights = [];
 
+	this.updates = [];
+
 	//Call the init function when this is instantiated
 	this.init(preset)
 }
@@ -38,4 +40,8 @@ Four.Help = function() {
 		}
 	}
 	return response
+}
+
+Four.Behavior = function() {
+
 }
