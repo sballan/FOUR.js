@@ -1,6 +1,5 @@
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
-  Four.Preset
   init: function(preset) {
     var setup = new Four.Setup()
 
