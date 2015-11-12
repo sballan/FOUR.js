@@ -1,9 +1,11 @@
 
 var preset = new Four.Presets()
+preset.scene.physics = true;
+preset.mesh.sphere.physics = true;
+
 var helper = new Four.Help()
 
-var arrangement = new Four.Arrangement();
-
+var arrangement = new Four.Arrangement(preset);
 
 var scene = arrangement.scene
 var camera = arrangement.camera

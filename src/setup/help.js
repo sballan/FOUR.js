@@ -16,8 +16,8 @@ Four.Help.prototype = {
 	},
 	scene: function() {
 		var s = 'The children in this scene are: '
-		s += Four.Arrangement.scene
 		console.log(s)
+		console.log(Four.Arrangement.scene)
 	}
 
 }

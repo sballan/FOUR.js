@@ -10,6 +10,19 @@ Four.Mesh = {
 
 
     return makeNewMesh(type);
+  },
+  //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+  processArgs: function() {
+  	if(arguments.length === 3 &&
+  			typeof arguments[0] === 'number' &&
+  			typeof arguments[1] === 'number' &&
+  			typeof arguments[2] === 'number' ) {
+  		var point = THREE.Vector3(arguments[0], arguments[1], arguments[2])
+  		return point
+  	}
+  	else return false;
+
   }
+
 
 }
