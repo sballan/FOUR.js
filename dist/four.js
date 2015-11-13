@@ -59,12 +59,16 @@ Four.Help = function (arrangement) {
 
 var p = {};
 Four.Behavior = {
-  moveTo: function moveTo(mesh, time) {
+  moveTo: function moveTo(target, time) {
     var preset = new Four.Preset('defaults').behaviors.moveTo;
     //Give time a fallback value
     time = time || preset.time;
 
-    var target = Four.Utils.toPoints(mesh.position);
+    target = {
+      x: target.x,
+      y: target.y,
+      z: target.z
+    };
 
     var tween = TweenMax.to(this.position, time, target);
     return tween;
@@ -77,6 +81,13 @@ Four.Behavior = {
 
     var tween = TweenMax.from(this.position, time, target);
     return tween;
+  },
+  toPoints: function toPoints(mesh) {
+    return {
+      x: mesh.position.x,
+      y: mesh.position.y,
+      z: mesh.position.z
+    };
   }
 
 };
@@ -130,14 +141,13 @@ Four.Mesh.sphere = function (preset) {
 
   s.makeBehavior = function (tweenString) {
     var self = this;
-    var args = Array.prototype.slice(1);
-    var tween = Four.Behavior[tweenString].bind(self, args);
-    console.log(tween);
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior[tweenString].apply(self, args);
     return tween;
   };
 
   s.makeBehaviorAndAdd = function (tweenString) {
-    var tween = this.makeBehavior(tweenString);
+    var tween = this.makeBehavior.apply(this, arguments);
     this.addToTimeline(tween);
     return tween;
   };
@@ -382,7 +392,7 @@ Four.Preset.prototype = {
         lookAtScene: true
       },
       renderer: {
-        clearColor: 0x555555,
+        clearColor: 0x999999,
         shadowMap: true,
         shadowMapSoft: true,
         antialias: true
@@ -390,9 +400,9 @@ Four.Preset.prototype = {
       updates: [{ func: function func() {}
       }],
       lights: {
-        positionX: 100,
+        positionX: 50,
         positionY: -20,
-        positionZ: -30,
+        positionZ: 50,
         color: 0xFFFFFF
       },
       camera: {
@@ -453,13 +463,11 @@ Four.Preset.prototype = {
 Four.Utils = {
   // Vectors
   toPoints: function toPoints(v) {
-    var p = {
+    return {
       x: v.x,
       y: v.y,
       z: v.z
     };
-    console.log(p);
-    return p;
   }
 
 };

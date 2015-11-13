@@ -27,14 +27,13 @@ Four.Mesh.sphere = function(preset) {
 
 		s.makeBehavior = function(tweenString) {
 			var self = this
-			var args = Array.prototype.slice(1)
-			var tween = Four.Behavior[tweenString].bind(self, args)
-			console.log(tween)
+			var args = Array.prototype.slice.call(arguments, 1)
+			var tween = Four.Behavior[tweenString].apply(self, args)
 			return tween;
 		}
 
 		s.makeBehaviorAndAdd = function(tweenString) {
-			var tween = this.makeBehavior(tweenString)
+			var tween = this.makeBehavior.apply(this, arguments)
 			this.addToTimeline(tween);
 			return tween
 		}

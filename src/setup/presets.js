@@ -7,9 +7,9 @@ Four.Preset.prototype = {
 			controls: {
 				OrbitControls: true,
 				lookAtScene: true
-			},
+			}, 
 			renderer: {
-				clearColor: 0x555555,
+				clearColor: 0x999999,
     		shadowMap: true,
     		shadowMapSoft: true,
     		antialias: true
@@ -19,9 +19,9 @@ Four.Preset.prototype = {
 				}
 			],
 			lights: {
-				positionX: 100,
+				positionX: 50,
     		positionY: -20,
-    		positionZ: -30,
+    		positionZ: 50,
     		color: 0xFFFFFF
 			},
 			camera: {
