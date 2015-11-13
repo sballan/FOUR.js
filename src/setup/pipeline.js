@@ -3,14 +3,13 @@ Four.Pipeline.prototype = {
     this.masterTimeline = new TimelineMax({paused: true})
 
   },
-  pushTweens: function(tweens) {
+  pushBehavior: function(tweens) {
     var self = this
-    // tweens.forEach(function(tween) {
-    //   tween.resume()
-    //   self.masterTimeline.add(tween)
-    // })
     self.masterTimeline.add(tweens, 0)
-    tweens.resume()
+  },
+  pushTimeline: function(timeline) {
+    var self = this
+    self.masterTimeline.add(timeline, 0)
   },
   start: function() {
     this.masterTimeline.play()
