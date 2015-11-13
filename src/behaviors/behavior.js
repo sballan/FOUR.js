@@ -4,8 +4,7 @@ Four.Behavior = {
     return {
       x: v.x,
       y: v.y,
-      z: v.z,
-      // paused: true
+      z: v.z
     }
   },
   moveTo: function(target, time) {
@@ -16,6 +15,19 @@ Four.Behavior = {
     target = Four.Behavior.toPoints(target)
 
     var tween = TweenMax.to(this.position, time, target)
+    return tween;
+  },
+  moveBackAndForth: function(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target)
+    target.repeat = 5
+    target.yoyo = true
+
+    var tween = TweenMax.to(this.position, time, target)
+
     return tween;
   },
   moveFrom: function(target, time) {

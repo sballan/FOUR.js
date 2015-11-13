@@ -23,6 +23,7 @@ Four.Mesh.Sphere.constructor = Four.Mesh.Sphere
 
 // Creates a new tween based on the based in string, and returns it
 Four.Mesh.prototype.makeBehavior = function(tweenString) {
+
   var self = this
   var args = Array.prototype.slice.call(arguments, 1)
   var tween = Four.Behavior[tweenString].apply(self, args)
@@ -38,6 +39,7 @@ Four.Mesh.prototype.addBehavior = function(tween) {
 
 // Creates a new tween and immediately adds it to this mesh's tweens array
 Four.Mesh.prototype.makeBehaviorAndAdd = function(tweenString) {
+  
   var tween = this.makeBehavior.apply(this, arguments)
   this.addBehavior(tween);
   return this

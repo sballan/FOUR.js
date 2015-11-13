@@ -18,7 +18,7 @@ sphere2.position.set(0, 0, 0);
 sphere.makeBehaviorAndAdd('moveTo', {x:15,y:6,z:-10})
 sphere.pipe()
 
-sphere2.makeBehaviorAndAdd('moveTo', {x:-3,y:6,z:-10})
+sphere2.makeBehaviorAndAdd('moveBackAndForth', {x:-3,y:6,z:-10})
 sphere2.pipe()
 
 

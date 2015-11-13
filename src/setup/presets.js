@@ -67,11 +67,13 @@ Four.Preset.prototype = {
 			},
 			behaviors: {
 				moveTo: {
-					rate: 1,
 					time: 2
 				},
 				moveFrom: {
 					target: {x: -4, y: -5, z: 3},
+					time: 2
+				},
+				moveBackAndForth: {
 					time: 2
 				}
 			}
