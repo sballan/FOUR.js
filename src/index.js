@@ -1,5 +1,11 @@
 var Four = {};
 
+Four.arrangements = []
+
+Four.addArrangement = function(arrangement) {
+	this.arrangements.push(arrangement)
+}
+
 
 Four.Setup = function (options) {
 
@@ -26,6 +32,14 @@ Four.Preset = function(options) {
 	if(!options) options = 'defaults';
 
 	return this[options]()
+}
+
+Four.Pipeline = function() {
+  this.TweenPipeline = [];
+	this.BasicPipeline = [];
+	this.masterTimeline = null;
+
+	this.init()
 }
 
 Four.Help = function(arrangement) {

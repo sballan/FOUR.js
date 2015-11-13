@@ -2,6 +2,12 @@
 
 var Four = {};
 
+Four.arrangements = [];
+
+Four.addArrangement = function (arrangement) {
+  this.arrangements.push(arrangement);
+};
+
 Four.Setup = function (options) {
 
   this.domSelector = "#webGL-container";
@@ -29,6 +35,14 @@ Four.Preset = function (options) {
   return this[options]();
 };
 
+Four.Pipeline = function () {
+  this.TweenPipeline = [];
+  this.BasicPipeline = [];
+  this.masterTimeline = null;
+
+  this.init();
+};
+
 Four.Help = function (arrangement) {
   var self = this;
   function response(question) {
@@ -41,6 +55,119 @@ Four.Help = function (arrangement) {
       }
   }
   return response;
+};
+
+var p = {};
+Four.Behavior = {
+  moveTo: function moveTo(mesh, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    var target = Four.Utils.toPoints(mesh.position);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveFrom: function moveFrom(time, target) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  }
+
+};
+
+Four.Mesh = {
+  make: function make(string, preset) {
+    if (!preset) preset = new Four.Preset('defaults').mesh;
+
+    // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+    var makeNewMesh = Four.Mesh[string];
+
+    // type will become the presets that should be passed to this new mesh
+    var type = preset[string];
+
+    return makeNewMesh(type);
+  },
+  //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+  processArgs: function processArgs() {
+    if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+      var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+      return point;
+    } else return false;
+  }
+
+};
+
+Four.Mesh.sphere = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh.sphere;
+  var x = preset.x,
+      y = preset.y,
+      z = preset.z,
+      radius = preset.radius,
+      widthSegments = preset.widthSegments,
+      heightSegments = preset.heightSegments,
+      materialType = preset.materialType,
+      materialOptions = preset.materialOptions;
+
+  var center = new THREE.Vector3(x, y, z);
+
+  var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  var material = new THREE[materialType](materialOptions);
+
+  // New mesh may be physics enabled or not physics enabled
+  var s;
+  if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
+
+  s.position.set(x, y, z);
+
+  // Enable tweening
+  s.timeline = new TimelineMax();
+
+  s.makeBehavior = function (tweenString) {
+    var self = this;
+    var args = Array.prototype.slice(1);
+    var tween = Four.Behavior[tweenString].bind(self, args);
+    console.log(tween);
+    return tween;
+  };
+
+  s.makeBehaviorAndAdd = function (tweenString) {
+    var tween = this.makeBehavior(tweenString);
+    this.addToTimeline(tween);
+    return tween;
+  };
+
+  s.addToTimeline = function (tween) {
+    s.timeline.add(tween);
+    return s;
+  };
+
+  s.pipe = function (index) {
+    index = index || 0;
+    console.log(Four.arrangements[0]);
+    Four.arrangements[0].pipeline.pushTimeline(s.timeline, this);
+    return s;
+  };
+
+  s.destroyTimeline = function () {
+    s.timeline = new TimelineMax();
+  };
+
+  return s;
+};
+
+Four.Preset.prototype.simplePhysics = function () {
+  var settings = new Four.Preset('defaults');
+
+  settings.scene.physics = true;
+  settings.mesh.sphere.physics = true;
+
+  return settings;
 };
 
 Four.Setup.prototype.Camera = function (preset) {
@@ -124,84 +251,6 @@ Four.Setup.prototype.Scene = function (preset) {
   return scene;
 };
 
-Four.Preset.prototype.simplePhysics = function () {
-  var settings = new Four.Preset('defaults');
-
-  settings.scene.physics = true;
-  settings.mesh.sphere.physics = true;
-
-  return settings;
-};
-
-Four.Mesh = {
-  make: function make(string, preset) {
-    if (!preset) preset = new Four.Preset('defaults').mesh;
-
-    // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-    var makeNewMesh = Four.Mesh[string];
-
-    // type will become the presets that should be passed to this new mesh
-    var type = preset[string];
-
-    return makeNewMesh(type);
-  },
-  //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-  processArgs: function processArgs() {
-    if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-      var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-      return point;
-    } else return false;
-  }
-
-};
-
-Four.Mesh.sphere = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh.sphere;
-  var x = preset.x,
-      y = preset.y,
-      z = preset.z,
-      radius = preset.radius,
-      widthSegments = preset.widthSegments,
-      heightSegments = preset.heightSegments,
-      materialType = preset.materialType,
-      materialOptions = preset.materialOptions;
-
-  var center = new THREE.Vector3(x, y, z);
-
-  var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-  var material = new THREE[materialType](materialOptions);
-
-  // New mesh may be physics enabled or not physics enabled
-  var s;
-  if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
-
-  s.position.set(x, y, z);
-
-  return s;
-};
-
-var p = {};
-Four.Behavior = {
-  moveTo: function moveTo(mesh, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    var target = Four.Utils.toPoints(mesh.position);
-
-    TweenMax.to(this.position, time, target);
-  },
-  moveFrom: function moveFrom(time, target) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    TweenMax.from(this.position, time, target);
-  }
-
-};
-
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function init(preset) {
@@ -214,7 +263,11 @@ Four.Arrangement.prototype = {
     this.lights = setup.Lights(preset.lights);
     this.addToScene(this.lights[0]);
 
+    //Setup a pipeline for this Arrangement
+    this.pipeline = new Four.Pipeline();
+
     this.updates = preset.updates;
+
     // Make camera point at the scene, no matter where it is.
     if (preset.controls.lookAtScene) {
       this.camera.lookAt(this.scene.position);
@@ -242,6 +295,9 @@ Four.Arrangement.prototype = {
     TweenMax.ticker.addEventListener("tick", update);
     //TimelineMax.ticker.addEventListener("tick", update)
     render();
+
+    // Add arrangement to the Four object
+    Four.addArrangement(self);
   },
   // Whatever function is passed in here is called every time the scene updates.
   update: function update() {
@@ -266,6 +322,9 @@ Four.Arrangement.prototype = {
   },
   addToScene: function addToScene(mesh) {
     this.scene.add(mesh);
+  },
+  start: function start() {
+    this.pipeline.start();
   }
 
 };
@@ -294,15 +353,22 @@ Four.Help.prototype = {
 
 };
 
-Four.Pipeline = {
-  TweenPipeline: [],
-  BasicPipeline: [],
+Four.Pipeline.prototype = {
+  init: function init() {
+    this.masterTimeline = new TimelineMax();
+  },
+  pushTimeline: function pushTimeline(timeline) {
+    this.TweenPipeline.push(timeline);
+  },
   pipe: function pipe() {
-    TweenPipeline.forEach(function (tween) {
-      tween.start();
+    this.TweenPipeline.forEach(function (timeline) {
+      this.masterTimeline.add(timeline);
     });
   },
-  mainTimeline: new TimelineMax()
+  start: function start() {
+    this.masterTimeline.active = true;
+  }
+
 };
 
 //This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.

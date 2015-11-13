@@ -1,10 +1,17 @@
-Four.Pipeline = {
-  TweenPipeline: [],
-  BasicPipeline: [],
+Four.Pipeline.prototype = {
+  init: function() {
+    this.masterTimeline = new TimelineMax()
+  },
+  pushTimeline: function(timeline) {
+    this.TweenPipeline.push(timeline)
+  },
   pipe: function() {
-    TweenPipeline.forEach(function(tween) {
-      tween.start()
+    this.TweenPipeline.forEach(function(timeline) {
+      this.masterTimeline.add(timeline)
     })
   },
-  mainTimeline: new TimelineMax()
+  start: function() {
+    this.masterTimeline.active = true
+  }
+
 }

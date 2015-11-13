@@ -7,9 +7,8 @@ Four.Behavior = {
 
     var target = Four.Utils.toPoints(mesh.position)
 
-    TweenMax.to(this.position, time, target)
-
-
+    var tween = TweenMax.to(this.position, time, target)
+    return tween;
   },
   moveFrom: function(time, target) {
     var preset = new Four.Preset('defaults').behaviors.moveFrom
@@ -17,8 +16,8 @@ Four.Behavior = {
     time = time || preset.time;
     target = target || preset.target
 
-
-    TweenMax.from(this.position, time, target)
+    var tween = TweenMax.from(this.position, time, target)
+    return tween;
   }
 
 
