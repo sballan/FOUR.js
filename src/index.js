@@ -23,7 +23,7 @@ Four.Mesh = function(preset) {
 	} else {
 		material = preset.material
 	}
- 
+
 	THREE.Mesh.call(this, geometry, material)
 
 	this.tweens = []
@@ -51,6 +51,7 @@ Four.Arrangement = function(preset) {
 }
 
 Four.Preset = function(options) {
+	this.init()
 	// options will be a string that will determine which preset is returned.
 	if(!options) options = 'defaults';
 
