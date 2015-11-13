@@ -1,5 +1,13 @@
 var p = {}
 Four.Behavior = {
+  toPoints: function(v) {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      paused: true
+    }
+  },
   moveTo: function(target, time) {
     var preset = new Four.Preset('defaults').behaviors.moveTo
     //Give time a fallback value
@@ -18,14 +26,6 @@ Four.Behavior = {
 
     var tween = TweenMax.from(this.position, time, target)
     return tween;
-  },
-  toPoints: function(v) {
-    return {
-      x: v.x,
-      y: v.y,
-      z: v.z,
-      paused: true
-    }
   }
 
 

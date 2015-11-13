@@ -15,20 +15,8 @@ var sphere = new Four.Mesh.make('sphere')
 var sphere2 = new Four.Mesh.make('sphere');
 sphere2.position.set(10, 2, 4);
 
-sphere.makeBehaviorAndAdd('moveTo', sphere2.position);
-sphere.makeBehaviorAndAdd('moveTo', sphere.position)
+sphere.makeBehaviorAndAdd('moveTo', {x:3,y:6,z:-10})
 sphere.pipe()
-
-var pos1 = {}
-
-var b1 = sphere.makeBehavior('moveTo', {x:5, y:15, z:3});
-var b2 = sphere.makeBehavior('moveTo', {x:6, y:4, z:-4});
-
-
-
-sphere.addBehavior(b1)
-  .addBehavior(b2)
-  .pipe()
 
 
 
