@@ -21,10 +21,23 @@ Four.Mesh.make = function(string, preset) {
   return new makeNewMesh(type);
 }
 
-Four.Mesh.prototype.createSet = function(number, spacing) {
+Four.Mesh.prototype.createSet = function(number, targetSpacing) {
   var self = this;
-  var scene = Four.arrangements[index].scene;
+  var scene = Four.arrangements[0].scene;
+  var meshes = []
 
+  targetSpacing = new THREE.Vector3(targetSpacing.x, targetSpacing.y, targetSpacing.z)
+
+  var spacing = targetSpacing;
+  for(var i = 0; i < number; i++) {
+    var mesh = this.clone()
+    mesh.position.add(spacing)
+    scene.add(mesh)
+    meshes.push(mesh)
+    console.log(spacing)
+    spacing.add(targetSpacing)
+  }
+  return meshes
 }
 
 Four.Mesh.prototype.clone = function() {

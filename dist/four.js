@@ -79,50 +79,6 @@ Four.Help = function (arrangement) {
   return response;
 };
 
-var p = {};
-Four.Behavior = {
-  toPoints: function toPoints(v) {
-    return {
-      x: v.x,
-      y: v.y,
-      z: v.z
-    };
-  },
-  moveTo: function moveTo(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-
-    var tween = TweenMax.to(this.position, time, target);
-    return tween;
-  },
-  moveBackAndForth: function moveBackAndForth(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-    target.repeat = 5;
-    target.yoyo = true;
-
-    var tween = TweenMax.to(this.position, time, target);
-
-    return tween;
-  },
-  moveFrom: function moveFrom(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    var tween = TweenMax.from(this.position, time, target);
-    return tween;
-  }
-
-};
-
 // Creates a new tween based on the based in string, and returns it
 Four.Mesh.prototype.makeBehavior = function (tweenString) {
 
@@ -186,9 +142,23 @@ Four.Mesh.make = function (string, preset) {
   return new makeNewMesh(type);
 };
 
-Four.Mesh.prototype.createSet = function (number, spacing) {
+Four.Mesh.prototype.createSet = function (number, targetSpacing) {
   var self = this;
-  var scene = Four.arrangements[index].scene;
+  var scene = Four.arrangements[0].scene;
+  var meshes = [];
+
+  targetSpacing = new THREE.Vector3(targetSpacing.x, targetSpacing.y, targetSpacing.z);
+
+  var spacing = targetSpacing;
+  for (var i = 0; i < number; i++) {
+    var mesh = this.clone();
+    mesh.position.add(spacing);
+    scene.add(mesh);
+    meshes.push(mesh);
+    console.log(spacing);
+    spacing.add(targetSpacing);
+  }
+  return meshes;
 };
 
 Four.Mesh.prototype.clone = function () {
@@ -205,6 +175,50 @@ Four.Mesh.prototype.processArgs = function () {
     var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
     return point;
   } else return false;
+};
+
+var p = {};
+Four.Behavior = {
+  toPoints: function toPoints(v) {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z
+    };
+  },
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveBackAndForth: function moveBackAndForth(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+    target.repeat = 5;
+    target.yoyo = true;
+
+    var tween = TweenMax.to(this.position, time, target);
+
+    return tween;
+  },
+  moveFrom: function moveFrom(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  }
+
 };
 
 Four.Preset.prototype.simplePhysics = function () {
