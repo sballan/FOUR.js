@@ -1,10 +1,15 @@
 var Four = {};
 
+Four.arrangements = []
+
+Four.addArrangement = function(arrangement) {
+	this.arrangements.push(arrangement)
+}
+
 
 Four.Setup = function (options) {
 
 	this.domSelector = "#webGL-container";
-Four.Preset
 }
 
 Four.Arrangement = function(preset) {
@@ -29,6 +34,14 @@ Four.Preset = function(options) {
 	return this[options]()
 }
 
+Four.Pipeline = function() {
+  this.TweenPipeline = [];
+	this.BasicPipeline = [];
+	this.masterTimeline = null;
+
+	this.init()
+}
+
 Four.Help = function(arrangement) {
 	var self = this
 	function response(question) {
@@ -42,7 +55,3 @@ Four.Help = function(arrangement) {
 	}
 	return response
 }
-
-// Four.Behavior = function() {
-//
-// }

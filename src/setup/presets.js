@@ -7,21 +7,21 @@ Four.Preset.prototype = {
 			controls: {
 				OrbitControls: true,
 				lookAtScene: true
-			},
+			}, 
 			renderer: {
-				clearColor: 0x555555,
+				clearColor: 0x999999,
     		shadowMap: true,
     		shadowMapSoft: true,
     		antialias: true
 			},
 			updates: [
-				{func: TWEEN.update
+				{func: function(){}
 				}
 			],
 			lights: {
-				positionX: 100,
+				positionX: 50,
     		positionY: -20,
-    		positionZ: -30,
+    		positionZ: 50,
     		color: 0xFFFFFF
 			},
 			camera: {
@@ -58,7 +58,11 @@ Four.Preset.prototype = {
 			behaviors: {
 				moveTo: {
 					rate: 1,
-					time: 30000
+					time: 2
+				},
+				moveFrom: {
+					target: {x: -4, y: -5, z: 3},
+					time: 2
 				}
 			}
 

@@ -1,31 +1,32 @@
+var p = {}
 Four.Behavior = {
-  moveTo: function(mesh, time) {
+  moveTo: function(target, time) {
     var preset = new Four.Preset('defaults').behaviors.moveTo
-    var self = this;
-    // We want the rate to be per 1/60 of a second
-    // var time = time || preset.time;
-    var position = Four.Utils.toPoints(self.position)
-    var target = Four.Utils.toPoints(mesh.position)
+    //Give time a fallback value
+    time = time || preset.time;
 
-    var tween = new TWEEN.Tween(position).to(target, time)
+    target = Four.Behavior.toPoints(target)
 
-    tween.onUpdate(function() {
-      self.position.set(position.x, position.y, position.z)
-    })
+    var tween = TweenMax.to(this.position, time, target)
+    return tween;
+  },
+  moveFrom: function(time, target) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target
 
-    tween.start()
+    var tween = TweenMax.from(this.position, time, target)
+    return tween;
+  },
+  toPoints: function(v) {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      paused: true
+    }
   }
 
-  // moveTo: function(mesh, time) {
-  //   var preset = new Four.Preset('defaults').behaviors.moveTo
-  //   // We want the rate to be per 1/60 of a second
-  //   var rate = rate / 60 || preset.rate / 60;
-  //   var position = this.position;
-  //   var target = mesh.position
-  //   var distance = position.distanceTo(target)
-  //   var time = distace / rate
-  //
-  //   var tween = new TWEEN.Tween(position).to(target, time)
-  //
-  // }
+
 }

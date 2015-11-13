@@ -10,7 +10,11 @@ Four.Arrangement.prototype = {
     this.lights = setup.Lights(preset.lights)
     this.addToScene(this.lights[0])
 
+    //Setup a pipeline for this Arrangement
+    this.pipeline = new Four.Pipeline();
+
     this.updates = preset.updates
+
     // Make camera point at the scene, no matter where it is.
     if(preset.controls.lookAtScene) {
       this.camera.lookAt(this.scene.position);
@@ -34,7 +38,13 @@ Four.Arrangement.prototype = {
       self.renderer.render(self.scene, self.camera);
       update()
     }
+
+    TweenMax.ticker.addEventListener("tick", update)
+    //TimelineMax.ticker.addEventListener("tick", update)
     render()
+
+    // Add arrangement to the Four object
+    Four.addArrangement(self)
 
   },
   // Whatever function is passed in here is called every time the scene updates.
@@ -61,6 +71,9 @@ Four.Arrangement.prototype = {
   },
   addToScene: function(mesh) {
     this.scene.add(mesh)
+  },
+  start: function() {
+    this.pipeline.start()
   }
 
 

@@ -2,10 +2,15 @@
 
 var Four = {};
 
+Four.arrangements = [];
+
+Four.addArrangement = function (arrangement) {
+  this.arrangements.push(arrangement);
+};
+
 Four.Setup = function (options) {
 
   this.domSelector = "#webGL-container";
-  Four.Preset;
 };
 
 Four.Arrangement = function (preset) {
@@ -30,6 +35,14 @@ Four.Preset = function (options) {
   return this[options]();
 };
 
+Four.Pipeline = function () {
+  this.TweenPipeline = [];
+  this.BasicPipeline = [];
+  this.masterTimeline = null;
+
+  this.init();
+};
+
 Four.Help = function (arrangement) {
   var self = this;
   function response(question) {
@@ -44,9 +57,37 @@ Four.Help = function (arrangement) {
   return response;
 };
 
-// Four.Behavior = function() {
-//
-// }
+var p = {};
+Four.Behavior = {
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveFrom: function moveFrom(time, target) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  },
+  toPoints: function toPoints(v) {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      paused: true
+    };
+  }
+
+};
 
 Four.Mesh = {
   make: function make(string, preset) {
@@ -92,39 +133,39 @@ Four.Mesh.sphere = function (preset) {
 
   s.position.set(x, y, z);
 
-  return s;
-};
+  // Enable tweening
+  s.timeline = new TimelineMax();
 
-Four.Behavior = {
-  moveTo: function moveTo(mesh, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
+  s.makeBehavior = function (tweenString) {
     var self = this;
-    // We want the rate to be per 1/60 of a second
-    // var time = time || preset.time;
-    var position = Four.Utils.toPoints(self.position);
-    var target = Four.Utils.toPoints(mesh.position);
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior[tweenString].apply(self, args);
+    return tween;
+  };
 
-    var tween = new TWEEN.Tween(position).to(target, time);
+  s.makeBehaviorAndAdd = function (tweenString) {
+    var tween = this.makeBehavior.apply(this, arguments);
+    this.addToTimeline(tween);
+    return tween;
+  };
 
-    tween.onUpdate(function () {
-      self.position.set(position.x, position.y, position.z);
-    });
+  s.addToTimeline = function (tween) {
+    s.timeline.add(tween);
+    return s;
+  };
 
-    tween.start();
-  }
+  s.pipe = function (index) {
+    index = index || 0;
+    console.log(Four.arrangements[0]);
+    Four.arrangements[0].pipeline.pushTimeline(s.timeline, this);
+    return s;
+  };
 
-  // moveTo: function(mesh, time) {
-  //   var preset = new Four.Preset('defaults').behaviors.moveTo
-  //   // We want the rate to be per 1/60 of a second
-  //   var rate = rate / 60 || preset.rate / 60;
-  //   var position = this.position;
-  //   var target = mesh.position
-  //   var distance = position.distanceTo(target)
-  //   var time = distace / rate
-  //
-  //   var tween = new TWEEN.Tween(position).to(target, time)
-  //
-  // }
+  s.destroyTimeline = function () {
+    s.timeline = new TimelineMax();
+  };
+
+  return s;
 };
 
 Four.Preset.prototype.simplePhysics = function () {
@@ -134,184 +175,6 @@ Four.Preset.prototype.simplePhysics = function () {
   settings.mesh.sphere.physics = true;
 
   return settings;
-};
-
-Four.Arrangement.prototype = {
-  //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
-  init: function init(preset) {
-    var self = this;
-    var setup = new Four.Setup();
-
-    this.scene = setup.Scene(preset.scene);
-    this.camera = setup.Camera(preset.camera);
-    this.renderer = setup.Renderer(preset.renderer);
-    this.lights = setup.Lights(preset.lights);
-    this.addToScene(this.lights[0]);
-
-    this.updates = preset.updates;
-    // Make camera point at the scene, no matter where it is.
-    if (preset.controls.lookAtScene) {
-      this.camera.lookAt(this.scene.position);
-    }
-    // Turn on debug mode if the preset says to.
-    this.debug(preset.debugMode);
-
-    //Bind context to avoid confusion/errors with Orbit Controls
-    var update = self.update.bind(self);
-
-    //Sets up Orbit Controls
-    if (preset.controls.OrbitControls) {
-      var controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
-      controls.addEventListener('change', update);
-      controls.update();
-    }
-
-    // This is the internal render function.  Additional functions can be called from the public update funciton.
-    var render = function render() {
-      requestAnimationFrame(render);
-      self.renderer.render(self.scene, self.camera);
-      update();
-    };
-    render();
-  },
-  // Whatever function is passed in here is called every time the scene updates.
-  update: function update() {
-    this.updates.forEach(function (update) {
-      update.func();
-    });
-  },
-  debug: function debug(preset) {
-    if (preset === undefined) {
-      preset = new Four.Preset('defaults').debugMode;
-    }
-
-    //If the preset value is false, do not use debug mode.
-    if (!preset) return;
-
-    var axis = new THREE.AxisHelper(10);
-    this.scene.add(axis);
-
-    var grid = new THREE.GridHelper(50, 5);
-    grid.setColors("rgb(255,0,0)", 0x222222);
-    this.scene.add(grid);
-  },
-  addToScene: function addToScene(mesh) {
-    this.scene.add(mesh);
-  }
-
-};
-
-//I think it would be cool to write a function that can act as a reference for the developer.  As I imagine it, during the development the developer puts a Four.Help function in global scope, and can then pass different strings to it to find out different things about the particular scene being worked on or the frameworks in general.
-
-Four.Help.prototype = {
-  generic: function generic() {
-    var s = "I'm sorry, but the query you have entered does not seem to be valid.  Try 'help' for details.";
-
-    console.log(s);
-  },
-  help: function help() {
-    var s = "Here are the currently supported queries:\n\n";
-    for (var prop in this.__proto__) {
-      if (prop === 'generic') continue;
-      s += prop + "\n";
-    }
-    console.log(s);
-  },
-  scene: function scene() {
-    var s = 'The children in this scene are: ';
-    console.log(s);
-    console.log(arrangement.scene);
-  }
-
-};
-
-//This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
-
-Four.Preset.prototype = {
-  defaults: function defaults() {
-    var settings = {
-      debugMode: true,
-      controls: {
-        OrbitControls: true,
-        lookAtScene: true
-      },
-      renderer: {
-        clearColor: 0x555555,
-        shadowMap: true,
-        shadowMapSoft: true,
-        antialias: true
-      },
-      updates: [{ func: TWEEN.update
-      }],
-      lights: {
-        positionX: 100,
-        positionY: -20,
-        positionZ: -30,
-        color: 0xFFFFFF
-      },
-      camera: {
-        angle: 45,
-        aspect: window.innerWidth / window.innerHeight,
-        near: 0.1,
-        far: 500,
-        positionX: 0,
-        positionY: 0,
-        positionZ: 80
-      },
-      scene: {
-        physics: false
-      },
-      mesh: {
-        sphere: {
-          physics: false,
-          x: 0,
-          y: 0,
-          z: 0,
-          radius: 5,
-          widthSegments: 16,
-          heightSegments: 16,
-          materialType: 'MeshPhongMaterial',
-          materialOptions: {
-            color: this.randomColor(),
-            specular: 0xb4b4b4b4,
-            shininess: 2,
-            reflectivity: 2
-          }
-
-        }
-      },
-      behaviors: {
-        moveTo: {
-          rate: 1,
-          time: 30000
-        }
-      }
-
-    };
-    return settings;
-  },
-  randomColor: function randomColor() {
-    var min = 64;
-    var max = 224;
-    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
-    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
-    var b = Math.floor(Math.random() * (max - min + 1)) + min;
-    return r + g + b;
-  }
-};
-
-Four.Utils = {
-  // Vectors
-  toPoints: function toPoints(v) {
-    var p = {
-      x: v.x,
-      y: v.y,
-      z: v.z
-    };
-    console.log(p);
-    return p;
-  }
-
 };
 
 Four.Setup.prototype.Camera = function (preset) {
@@ -393,4 +256,222 @@ Four.Setup.prototype.Scene = function (preset) {
   if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
 
   return scene;
+};
+
+Four.Arrangement.prototype = {
+  //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
+  init: function init(preset) {
+    var self = this;
+    var setup = new Four.Setup();
+
+    this.scene = setup.Scene(preset.scene);
+    this.camera = setup.Camera(preset.camera);
+    this.renderer = setup.Renderer(preset.renderer);
+    this.lights = setup.Lights(preset.lights);
+    this.addToScene(this.lights[0]);
+
+    //Setup a pipeline for this Arrangement
+    this.pipeline = new Four.Pipeline();
+
+    this.updates = preset.updates;
+
+    // Make camera point at the scene, no matter where it is.
+    if (preset.controls.lookAtScene) {
+      this.camera.lookAt(this.scene.position);
+    }
+    // Turn on debug mode if the preset says to.
+    this.debug(preset.debugMode);
+
+    //Bind context to avoid confusion/errors with Orbit Controls
+    var update = self.update.bind(self);
+
+    //Sets up Orbit Controls
+    if (preset.controls.OrbitControls) {
+      var controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      controls.addEventListener('change', update);
+      controls.update();
+    }
+
+    // This is the internal render function.  Additional functions can be called from the public update funciton.
+    var render = function render() {
+      requestAnimationFrame(render);
+      self.renderer.render(self.scene, self.camera);
+      update();
+    };
+
+    TweenMax.ticker.addEventListener("tick", update);
+    //TimelineMax.ticker.addEventListener("tick", update)
+    render();
+
+    // Add arrangement to the Four object
+    Four.addArrangement(self);
+  },
+  // Whatever function is passed in here is called every time the scene updates.
+  update: function update() {
+    this.updates.forEach(function (update) {
+      update.func();
+    });
+  },
+  debug: function debug(preset) {
+    if (preset === undefined) {
+      preset = new Four.Preset('defaults').debugMode;
+    }
+
+    //If the preset value is false, do not use debug mode.
+    if (!preset) return;
+
+    var axis = new THREE.AxisHelper(10);
+    this.scene.add(axis);
+
+    var grid = new THREE.GridHelper(50, 5);
+    grid.setColors("rgb(255,0,0)", 0x222222);
+    this.scene.add(grid);
+  },
+  addToScene: function addToScene(mesh) {
+    this.scene.add(mesh);
+  },
+  start: function start() {
+    this.pipeline.start();
+  }
+
+};
+
+//I think it would be cool to write a function that can act as a reference for the developer.  As I imagine it, during the development the developer puts a Four.Help function in global scope, and can then pass different strings to it to find out different things about the particular scene being worked on or the frameworks in general.
+
+Four.Help.prototype = {
+  generic: function generic() {
+    var s = "I'm sorry, but the query you have entered does not seem to be valid.  Try 'help' for details.";
+
+    console.log(s);
+  },
+  help: function help() {
+    var s = "Here are the currently supported queries:\n\n";
+    for (var prop in this.__proto__) {
+      if (prop === 'generic') continue;
+      s += prop + "\n";
+    }
+    console.log(s);
+  },
+  scene: function scene() {
+    var s = 'The children in this scene are: ';
+    console.log(s);
+    console.log(arrangement.scene);
+  }
+
+};
+
+Four.Pipeline.prototype = {
+  init: function init() {
+    this.masterTimeline = new TimelineMax();
+  },
+  pushTimeline: function pushTimeline(timeline) {
+    console.log("timeline", timeline);
+    this.TweenPipeline.push(timeline);
+    timeline.resume();
+    console.log("timeline pipline", this.TweenPipeline);
+  },
+  pipe: function pipe() {
+    var self = this;
+    self.TweenPipeline.forEach(function (timeline) {
+      self.masterTimeline.add(timeline);
+      console.log("mytimeplien", timeline);
+      timeline.resume();
+    });
+  },
+  start: function start() {
+    this.pipe();
+    this.masterTimeline.play();
+  }
+
+};
+
+//This function returns a preset object, which is used to create various preset arrangements.  If no preset is specified, the default preset is used to create a new Arrangement.
+
+Four.Preset.prototype = {
+  defaults: function defaults() {
+    var settings = {
+      debugMode: true,
+      controls: {
+        OrbitControls: true,
+        lookAtScene: true
+      },
+      renderer: {
+        clearColor: 0x999999,
+        shadowMap: true,
+        shadowMapSoft: true,
+        antialias: true
+      },
+      updates: [{ func: function func() {}
+      }],
+      lights: {
+        positionX: 50,
+        positionY: -20,
+        positionZ: 50,
+        color: 0xFFFFFF
+      },
+      camera: {
+        angle: 45,
+        aspect: window.innerWidth / window.innerHeight,
+        near: 0.1,
+        far: 500,
+        positionX: 0,
+        positionY: 0,
+        positionZ: 80
+      },
+      scene: {
+        physics: false
+      },
+      mesh: {
+        sphere: {
+          physics: false,
+          x: 0,
+          y: 0,
+          z: 0,
+          radius: 5,
+          widthSegments: 16,
+          heightSegments: 16,
+          materialType: 'MeshPhongMaterial',
+          materialOptions: {
+            color: this.randomColor(),
+            specular: 0xb4b4b4b4,
+            shininess: 2,
+            reflectivity: 2
+          }
+
+        }
+      },
+      behaviors: {
+        moveTo: {
+          rate: 1,
+          time: 2
+        },
+        moveFrom: {
+          target: { x: -4, y: -5, z: 3 },
+          time: 2
+        }
+      }
+
+    };
+    return settings;
+  },
+  randomColor: function randomColor() {
+    var min = 64;
+    var max = 224;
+    var r = (Math.floor(Math.random() * (max - min + 1)) + min) * 65536;
+    var g = (Math.floor(Math.random() * (max - min + 1)) + min) * 256;
+    var b = Math.floor(Math.random() * (max - min + 1)) + min;
+    return r + g + b;
+  }
+};
+
+Four.Utils = {
+  // Vectors
+  toPoints: function toPoints(v) {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z
+    };
+  }
+
 };

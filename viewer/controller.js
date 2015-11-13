@@ -15,7 +15,11 @@ var sphere = new Four.Mesh.make('sphere')
 var sphere2 = new Four.Mesh.make('sphere');
 sphere2.position.set(10, 2, 4);
 
-Four.Behavior.moveTo.call(sphere, sphere2, 5000)
+sphere.makeBehaviorAndAdd('moveTo', sphere2.position);
+sphere.pipe()
+
 
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(sphere)
+arrangement.addToScene(sphere2)
+arrangement.start()
