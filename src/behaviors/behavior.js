@@ -5,7 +5,7 @@ Four.Behavior = {
       x: v.x,
       y: v.y,
       z: v.z,
-      paused: true
+      // paused: true
     }
   },
   moveTo: function(target, time) {

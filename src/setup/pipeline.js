@@ -1,26 +1,18 @@
 Four.Pipeline.prototype = {
   init: function() {
-    this.masterTimeline = new TimelineMax()
-    this.masterTimeline.pause()
+    this.masterTimeline = new TimelineMax({paused: true})
+
   },
   pushTweens: function(tweens) {
     var self = this
-    console.log("the tweens", tweens)
-    tweens.forEach(function(tween) {
-      tween.resume()
-      self.masterTimeline.add(tween)
-    })
+    // tweens.forEach(function(tween) {
+    //   tween.resume()
+    //   self.masterTimeline.add(tween)
+    // })
+    self.masterTimeline.add(tweens, 0)
+    tweens.resume()
   },
-  // pipe: function() {
-  //   var self = this
-  //   self.TweenPipeline.forEach(function(timeline) {
-  //     self.masterTimeline.add(timeline)
-  //     console.log("mytimeplien", timeline)
-  //     timeline.resume()
-  //   })
-  // },
   start: function() {
-    // this.pipe()
     this.masterTimeline.play()
   }
 

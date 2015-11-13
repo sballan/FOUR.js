@@ -8,9 +8,27 @@ Four.addArrangement = function(arrangement) {
 
 
 Four.Setup = function (options) {
-
 	this.domSelector = "#webGL-container";
 }
+
+Four.Mesh = function(preset) {
+	preset = preset || new Four.Preset('defaults').mesh
+	var geometry = preset.geometry
+
+	var materialType = preset.materialType
+	var materialOptions = preset.materialOptions
+	var material = new THREE[materialType](materialOptions)
+
+	THREE.Mesh.call(this, geometry, material)
+
+	this.tweens = []
+	this.physics = false
+	// this.init()
+}
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.prototype = Object.create(THREE.Mesh.prototype)
+Four.Mesh.constructor = Four.Mesh
 
 Four.Arrangement = function(preset) {
 	if(!preset) preset = new Four.Preset('defaults')
