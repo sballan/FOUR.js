@@ -63,6 +63,19 @@ Four.Preset.prototype = {
 						reflectivity: 2
 					}
 
+				},
+				box: {
+					height: 5,
+					width: 5,
+					depth: 5,
+					geometry: new THREE.BoxGeometry(10, 10, 10),
+					materialType: 'MeshPhongMaterial',
+					materialOptions: {
+						color: this.randomColor(),
+						specular: 0xb4b4b4b4,
+						shininess: 2,
+						reflectivity: 2
+					}
 				}
 			},
 			behaviors: {

@@ -21,11 +21,10 @@ sphere.pipe()
 sphere2.makeBehaviorAndAdd('moveBackAndForth', {x:-3,y:6,z:-10})
 sphere2.pipe()
 
-var sphere3 = sphere2.clone()
-sphere3.makeBehaviorAndAdd('moveBackAndForth', {x:-70,y:50,z:-10})
-sphere3.pipe()
+var box = new Four.Mesh.Box()
+box.makeBehaviorAndAdd('moveBackAndForth', {x:-70,y:50,z:-10})
+box.pipe()
 
-sphere3.createSet(10, {x:10, y:10, z:10})
 
 
 
@@ -33,5 +32,5 @@ sphere3.createSet(10, {x:10, y:10, z:10})
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(sphere)
 arrangement.addToScene(sphere2)
-arrangement.addToScene(sphere3)
+arrangement.addToScene(box)
 arrangement.start()

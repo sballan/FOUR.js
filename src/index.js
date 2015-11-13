@@ -13,16 +13,17 @@ Four.Setup = function (options) {
 
 Four.Mesh = function(preset) {
 	preset = preset || new Four.Preset('defaults').mesh
-	var geometry = preset.geometry
 
+	var geometry = preset.geometry
+	var material;
 	if(!preset.material) {
 		var materialType = preset.materialType
 		var materialOptions = preset.materialOptions
-		var material = new THREE[materialType](materialOptions)
+		material = new THREE[materialType](materialOptions)
 	} else {
-		var material = preset.material
+		material = preset.material
 	}
-
+ 
 	THREE.Mesh.call(this, geometry, material)
 
 	this.tweens = []

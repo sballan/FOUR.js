@@ -1,12 +1,3 @@
-Four.Mesh.Sphere = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere
-  Four.Mesh.call(this, preset)
-}
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype)
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere
-
 //Class method to make a new mesh
 Four.Mesh.make = function(string, preset) {
   if(!preset) preset = new Four.Preset('defaults').mesh;
@@ -17,10 +8,10 @@ Four.Mesh.make = function(string, preset) {
   // type will become the presets that should be passed to this new mesh
   var type = preset[string];
 
-
   return new makeNewMesh(type);
 }
 
+// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
 Four.Mesh.prototype.createSet = function(number, targetSpacing) {
   var self = this;
   var scene = Four.arrangements[0].scene;

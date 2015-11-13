@@ -14,14 +14,15 @@ Four.Setup = function (options) {
 
 Four.Mesh = function (preset) {
   preset = preset || new Four.Preset('defaults').mesh;
-  var geometry = preset.geometry;
 
+  var geometry = preset.geometry;
+  var material;
   if (!preset.material) {
     var materialType = preset.materialType;
     var materialOptions = preset.materialOptions;
-    var material = new THREE[materialType](materialOptions);
+    material = new THREE[materialType](materialOptions);
   } else {
-    var material = preset.material;
+    material = preset.material;
   }
 
   THREE.Mesh.call(this, geometry, material);
@@ -79,104 +80,6 @@ Four.Help = function (arrangement) {
   return response;
 };
 
-// Creates a new tween based on the based in string, and returns it
-Four.Mesh.prototype.makeBehavior = function (tweenString) {
-
-  var self = this;
-  var args = Array.prototype.slice.call(arguments, 1);
-  var tween = Four.Behavior[tweenString].apply(self, args);
-  this.tweens.push(tween);
-  return tween;
-};
-
-// Adds a tween to this mesh's tweens array
-Four.Mesh.prototype.addBehavior = function (tween) {
-  this.tweens.push(tween);
-  return this;
-};
-
-// Creates a new tween and immediately adds it to this mesh's tweens array
-Four.Mesh.prototype.makeBehaviorAndAdd = function (tweenString) {
-
-  var tween = this.makeBehavior.apply(this, arguments);
-  this.addBehavior(tween);
-  return this;
-};
-
-// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-Four.Mesh.prototype.pipe = function (index) {
-  index = index || 0;
-  var timeline = new TimelineMax();
-
-  timeline.insertMultiple(this.tweens);
-
-  Four.arrangements[index].pipeline.pushTimeline(timeline);
-  this.removeBehaviors();
-  return this;
-};
-
-// Removes all tweens from this mesh
-Four.Mesh.prototype.removeBehaviors = function () {
-  this.tweens = [];
-};
-
-Four.Mesh.Sphere = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere;
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
-
-//Class method to make a new mesh
-Four.Mesh.make = function (string, preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh;
-
-  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-  var makeNewMesh = Four.Mesh[string];
-
-  // type will become the presets that should be passed to this new mesh
-  var type = preset[string];
-
-  return new makeNewMesh(type);
-};
-
-Four.Mesh.prototype.createSet = function (number, targetSpacing) {
-  var self = this;
-  var scene = Four.arrangements[0].scene;
-  var meshes = [];
-
-  targetSpacing = new THREE.Vector3(targetSpacing.x, targetSpacing.y, targetSpacing.z);
-
-  var spacing = targetSpacing;
-  for (var i = 0; i < number; i++) {
-    var mesh = this.clone();
-    mesh.position.add(spacing);
-    scene.add(mesh);
-    meshes.push(mesh);
-    console.log(spacing);
-    spacing.add(targetSpacing);
-  }
-  return meshes;
-};
-
-Four.Mesh.prototype.clone = function () {
-  var preset = new Four.Preset('defaults').mesh;
-  preset.geometry = this.geometry;
-  preset.material = this.material;
-
-  return new Four.Mesh.constructor(preset);
-};
-
-//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-Four.Mesh.prototype.processArgs = function () {
-  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-    return point;
-  } else return false;
-};
-
 var p = {};
 Four.Behavior = {
   toPoints: function toPoints(v) {
@@ -221,6 +124,126 @@ Four.Behavior = {
 
 };
 
+// Creates a new tween based on the based in string, and returns it
+Four.Mesh.prototype.makeBehavior = function (tweenString) {
+
+  var self = this;
+  var args = Array.prototype.slice.call(arguments, 1);
+  var tween = Four.Behavior[tweenString].apply(self, args);
+  this.tweens.push(tween);
+  return tween;
+};
+
+// Adds a tween to this mesh's tweens array
+Four.Mesh.prototype.addBehavior = function (tween) {
+  this.tweens.push(tween);
+  return this;
+};
+
+// Creates a new tween and immediately adds it to this mesh's tweens array
+Four.Mesh.prototype.makeBehaviorAndAdd = function (tweenString) {
+
+  var tween = this.makeBehavior.apply(this, arguments);
+  this.addBehavior(tween);
+  return this;
+};
+
+// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+Four.Mesh.prototype.pipe = function (index) {
+  index = index || 0;
+  var timeline = new TimelineMax();
+
+  timeline.insertMultiple(this.tweens);
+
+  Four.arrangements[index].pipeline.pushTimeline(timeline);
+  this.removeBehaviors();
+  return this;
+};
+
+// Removes all tweens from this mesh
+Four.Mesh.prototype.removeBehaviors = function () {
+  this.tweens = [];
+};
+
+Four.Mesh.Box = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.box;
+
+  var width = preset.width;
+  var height = preset.height;
+  var depth = preset.depth;
+
+  preset.geometry = new THREE.BoxGeometry(width, height, depth);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Box.constructor = Four.Mesh.Box;
+
+//Class method to make a new mesh
+Four.Mesh.make = function (string, preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh;
+
+  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+  var makeNewMesh = Four.Mesh[string];
+
+  // type will become the presets that should be passed to this new mesh
+  var type = preset[string];
+
+  return new makeNewMesh(type);
+};
+
+// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSet = function (number, targetSpacing) {
+  var self = this;
+  var scene = Four.arrangements[0].scene;
+  var meshes = [];
+
+  targetSpacing = new THREE.Vector3(targetSpacing.x, targetSpacing.y, targetSpacing.z);
+
+  var spacing = targetSpacing;
+  for (var i = 0; i < number; i++) {
+    var mesh = this.clone();
+    mesh.position.add(spacing);
+    scene.add(mesh);
+    meshes.push(mesh);
+    console.log(spacing);
+    spacing.add(targetSpacing);
+  }
+  return meshes;
+};
+
+Four.Mesh.prototype.clone = function () {
+  var preset = new Four.Preset('defaults').mesh;
+  preset.geometry = this.geometry;
+  preset.material = this.material;
+
+  return new Four.Mesh.constructor(preset);
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
+};
+
+Four.Mesh.Sphere = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.sphere;
+
+  var radius = preset.radius;
+  var widthSegments = preset.widthSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+
 Four.Preset.prototype.simplePhysics = function () {
   var settings = new Four.Preset('defaults');
 
@@ -228,87 +251,6 @@ Four.Preset.prototype.simplePhysics = function () {
   settings.mesh.sphere.physics = true;
 
   return settings;
-};
-
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').lights;
-
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-  var color = preset.color;
-
-  var light = new THREE.PointLight();
-
-  light.position.set(positionX, positionY, positionZ);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').renderer;
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: false
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').scene;
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
-
-  return scene;
 };
 
 Four.Arrangement.prototype = {
@@ -494,6 +436,19 @@ Four.Preset.prototype = {
             reflectivity: 2
           }
 
+        },
+        box: {
+          height: 5,
+          width: 5,
+          depth: 5,
+          geometry: new THREE.BoxGeometry(10, 10, 10),
+          materialType: 'MeshPhongMaterial',
+          materialOptions: {
+            color: this.randomColor(),
+            specular: 0xb4b4b4b4,
+            shininess: 2,
+            reflectivity: 2
+          }
         }
       },
       behaviors: {
@@ -532,4 +487,85 @@ Four.Utils = {
     };
   }
 
+};
+
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
+
+  return camera;
+};
+
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
+
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').lights;
+
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+  var color = preset.color;
+
+  var light = new THREE.PointLight();
+
+  light.position.set(positionX, positionY, positionZ);
+
+  return [light];
+};
+
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').renderer;
+
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: false
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
+};
+
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').scene;
+
+  var scene; // Physics will be set on next line
+  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
+
+  return scene;
 };
