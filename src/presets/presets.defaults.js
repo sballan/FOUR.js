@@ -28,7 +28,7 @@ Four.Preset.data = {
       near: 0.1,
       far: 500,
       positionX: 0,
-      positionY: 0,
+      positionY: 60,
       positionZ: 80 
     },
     scene: {

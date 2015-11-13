@@ -20,12 +20,16 @@ var box = new Four.Mesh.Box()
 box.position.setZ(-80)
 box.position.setX(-80)
 
+var cb = function(mesh) {
+  mesh.material = Four.Preset.makeMaterial()
+  mesh.makeBehaviorAndAdd('flipFlop', {x: 6}, 2)
+  mesh.pipe()
+}
+
 for(var i = 0; i < 16; i++) {
   box.position.setX(-80)
   box.position.z+=10
-  box.createSet(16, {x:10, y:0, z: 0}, function(mesh) {
-    mesh.material = Four.Preset.makeMaterial()
-  })
+  box.createSet(16, {x:10, y:0, z: 0}, cb)
 }
 // box.pipe()
 

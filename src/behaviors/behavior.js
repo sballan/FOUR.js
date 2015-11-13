@@ -7,6 +7,13 @@ Four.Behavior = {
       z: v.z
     }
   },
+  flipFlop: function(amount, time) {
+    amount.repeat = 40
+    amount.yoyo = true
+    amount.delay = 1
+    var tween = TweenMax.to(this.rotation, time, amount)
+    return tween
+  },
   moveTo: function(target, time) {
     var preset = new Four.Preset('defaults').behaviors.moveTo
     //Give time a fallback value

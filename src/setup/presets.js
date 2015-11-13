@@ -16,11 +16,11 @@ Four.Preset.prototype.resetDefaults = function(preset) {
 }
 
 Four.Preset.makeMaterial = function() {
-	return new THREE.MeshLambertMaterial({
+	return new THREE.MeshPhongMaterial({
 		color: Four.Preset.randomColor(),
 		specular: 0xb4b4b4b4,
 		shininess: 2,
-		reflectivity: 2
+		reflectivity: 1
 	})
 }
 
