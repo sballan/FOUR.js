@@ -13,11 +13,16 @@ Four.Setup = function (options) {
 
 Four.Mesh = function(preset) {
 	preset = preset || new Four.Preset('defaults').mesh
-	var geometry = preset.geometry
 
-	var materialType = preset.materialType
-	var materialOptions = preset.materialOptions
-	var material = new THREE[materialType](materialOptions)
+	var geometry = preset.geometry
+	var material;
+	if(!preset.material) {
+		var materialType = preset.materialType
+		var materialOptions = preset.materialOptions
+		material = new THREE[materialType](materialOptions)
+	} else {
+		material = preset.material
+	}
 
 	THREE.Mesh.call(this, geometry, material)
 
@@ -46,6 +51,7 @@ Four.Arrangement = function(preset) {
 }
 
 Four.Preset = function(options) {
+	this.init()
 	// options will be a string that will determine which preset is returned.
 	if(!options) options = 'defaults';
 

@@ -8,56 +8,39 @@ Four.Mesh.make = function(string, preset) {
   // type will become the presets that should be passed to this new mesh
   var type = preset[string];
 
-
   return new makeNewMesh(type);
 }
 
-Four.Mesh.Sphere = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere
-  Four.Mesh.call(this, preset)
+// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSet = function(number, spacing, cb) {
+  var self = this;
+  var scene = Four.arrangements[0].scene;
+  var meshes = []
+
+  var p = self.position
+  var pSave = self.position
+  spacing = new THREE.Vector3(spacing.x, spacing.y, spacing.z)
+
+  for(var i = 0; i < number; i++) {
+    var mesh = this.clone()
+    mesh.position.set(p.x, p.y, p.z)
+    mesh.position.add(spacing)
+    scene.add(mesh)
+    meshes.push(mesh)
+    p.add(spacing)
+    
+    if(cb) cb(mesh)
+  }
+  self.position.set(pSave.x, pSave.y, pSave.z)
+  return meshes
 }
 
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype)
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere
+Four.Mesh.prototype.clone = function() {
+  var preset = new Four.Preset('defaults').mesh
+  preset.geometry = this.geometry
+  preset.material = this.material
 
-// Creates a new tween based on the based in string, and returns it
-Four.Mesh.prototype.makeBehavior = function(tweenString) {
-  var self = this
-  var args = Array.prototype.slice.call(arguments, 1)
-  var tween = Four.Behavior[tweenString].apply(self, args)
-  this.tweens.push(tween);
-  return tween;
-}
-
-// Adds a tween to this mesh's tweens array
-Four.Mesh.prototype.addBehavior = function(tween) {
-  this.tweens.push(tween)
-  return this
-}
-
-// Creates a new tween and immediately adds it to this mesh's tweens array
-Four.Mesh.prototype.makeBehaviorAndAdd = function(tweenString) {
-  var tween = this.makeBehavior.apply(this, arguments)
-  this.addBehavior(tween);
-  return this
-}
-
-// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-Four.Mesh.prototype.pipe= function(index) {
-  index = index || 0
-  var timeline = new TimelineMax()
-
-  timeline.insertMultiple(this.tweens)
-
-  Four.arrangements[index].pipeline.pushTimeline(timeline)
-  this.removeBehaviors()
-  return this;
-}
-
-// Removes all tweens from this mesh
-Four.Mesh.prototype.removeBehaviors = function() {
-  this.tweens = []
+  return new Four.Mesh.constructor(preset)
 }
 
 
