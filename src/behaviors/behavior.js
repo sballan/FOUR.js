@@ -5,11 +5,7 @@ Four.Behavior = {
     //Give time a fallback value
     time = time || preset.time;
 
-    target = {
-      x: target.x,
-      y: target.y,
-      z: target.z
-    }
+    target = Four.Behavior.toPoints(target)
 
     var tween = TweenMax.to(this.position, time, target)
     return tween;
@@ -23,11 +19,12 @@ Four.Behavior = {
     var tween = TweenMax.from(this.position, time, target)
     return tween;
   },
-  toPoints: function(mesh) {
+  toPoints: function(v) {
     return {
-      x: mesh.position.x,
-      y: mesh.position.y,
-      z: mesh.position.z
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      paused: true
     }
   }
 

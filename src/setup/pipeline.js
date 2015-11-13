@@ -3,15 +3,22 @@ Four.Pipeline.prototype = {
     this.masterTimeline = new TimelineMax()
   },
   pushTimeline: function(timeline) {
+    console.log("timeline", timeline)
     this.TweenPipeline.push(timeline)
+    timeline.resume()
+    console.log("timeline pipline", this.TweenPipeline)
   },
   pipe: function() {
-    this.TweenPipeline.forEach(function(timeline) {
-      this.masterTimeline.add(timeline)
+    var self = this
+    self.TweenPipeline.forEach(function(timeline) {
+      self.masterTimeline.add(timeline)
+      console.log("mytimeplien", timeline)
+      timeline.resume()
     })
   },
   start: function() {
-    this.masterTimeline.active = true
+    this.pipe()
+    this.masterTimeline.play()
   }
 
 }

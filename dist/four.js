@@ -64,11 +64,7 @@ Four.Behavior = {
     //Give time a fallback value
     time = time || preset.time;
 
-    target = {
-      x: target.x,
-      y: target.y,
-      z: target.z
-    };
+    target = Four.Behavior.toPoints(target);
 
     var tween = TweenMax.to(this.position, time, target);
     return tween;
@@ -82,11 +78,12 @@ Four.Behavior = {
     var tween = TweenMax.from(this.position, time, target);
     return tween;
   },
-  toPoints: function toPoints(mesh) {
+  toPoints: function toPoints(v) {
     return {
-      x: mesh.position.x,
-      y: mesh.position.y,
-      z: mesh.position.z
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      paused: true
     };
   }
 
@@ -368,15 +365,22 @@ Four.Pipeline.prototype = {
     this.masterTimeline = new TimelineMax();
   },
   pushTimeline: function pushTimeline(timeline) {
+    console.log("timeline", timeline);
     this.TweenPipeline.push(timeline);
+    timeline.resume();
+    console.log("timeline pipline", this.TweenPipeline);
   },
   pipe: function pipe() {
-    this.TweenPipeline.forEach(function (timeline) {
-      this.masterTimeline.add(timeline);
+    var self = this;
+    self.TweenPipeline.forEach(function (timeline) {
+      self.masterTimeline.add(timeline);
+      console.log("mytimeplien", timeline);
+      timeline.resume();
     });
   },
   start: function start() {
-    this.masterTimeline.active = true;
+    this.pipe();
+    this.masterTimeline.play();
   }
 
 };
