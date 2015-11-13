@@ -17,7 +17,7 @@ Four.Mesh.sphere = function(preset) {
 
 		// New mesh may be physics enabled or not physics enabled
 		var s;
-		if(preset.physics) s = new THREE.Mesh(geometry, material)
+		if(!preset.physics) s = new THREE.Mesh(geometry, material)
 			else s = new Physijs.SphereMesh(geometry, material)
 
 		s.position.set(x, y, z)

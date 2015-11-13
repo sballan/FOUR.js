@@ -23,11 +23,12 @@ Four.Mesh = function (preset) {
   THREE.Mesh.call(this, geometry, material);
 
   this.tweens = [];
+  this.physics = false;
   // this.init()
 };
 
+// Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.prototype = Object.create(THREE.Mesh.prototype);
-
 Four.Mesh.constructor = Four.Mesh;
 
 Four.Arrangement = function (preset) {
@@ -116,8 +117,18 @@ Four.Mesh.make = function (string, preset) {
   // type will become the presets that should be passed to this new mesh
   var type = preset[string];
 
-  return makeNewMesh(type);
+  return new makeNewMesh(type);
 };
+
+Four.Mesh.Sphere = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.sphere;
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+
 // Creates a new tween based on the based in string, and returns it
 Four.Mesh.prototype.makeBehavior = function (tweenString) {
   var self = this;
@@ -129,7 +140,7 @@ Four.Mesh.prototype.makeBehavior = function (tweenString) {
 
 // Adds a tween to this mesh's tweens array
 Four.Mesh.prototype.addBehavior = function (tween) {
-  s.tweens.push(tween);
+  this.tweens.push(tween);
   return this;
 };
 
@@ -144,8 +155,13 @@ Four.Mesh.prototype.makeBehaviorAndAdd = function (tweenString) {
 Four.Mesh.prototype.pipe = function (index) {
   index = index || 0;
   Four.arrangements[index].pipeline.pushTweens(this.tweens);
-  s.removeBehaviors();
-  return s;
+  this.removeBehaviors();
+  return this;
+};
+
+// Removes all tweens from this mesh
+Four.Mesh.prototype.removeBehaviors = function () {
+  this.tweens = [];
 };
 
 //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
@@ -174,7 +190,7 @@ Four.Mesh.sphere = function (preset) {
 
   // New mesh may be physics enabled or not physics enabled
   var s;
-  if (preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
+  if (!preset.physics) s = new THREE.Mesh(geometry, material);else s = new Physijs.SphereMesh(geometry, material);
 
   s.position.set(x, y, z);
 
@@ -476,6 +492,7 @@ Four.Preset.prototype = {
         physics: false
       },
       mesh: {
+        geometry: new THREE.SphereGeometry(5, 16, 16),
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: this.randomColor(),
@@ -483,6 +500,7 @@ Four.Preset.prototype = {
           shininess: 2,
           reflectivity: 2
         },
+        physics: false,
         sphere: {
           physics: false,
           x: 0,
@@ -491,6 +509,7 @@ Four.Preset.prototype = {
           radius: 5,
           widthSegments: 16,
           heightSegments: 16,
+          geometry: new THREE.SphereGeometry(5, 16, 16),
           materialType: 'MeshPhongMaterial',
           materialOptions: {
             color: this.randomColor(),

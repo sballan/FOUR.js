@@ -12,11 +12,14 @@ var arrangement = new Four.Arrangement(preset);
 // Make a new sphere object
 var sphere = new Four.Mesh.make('sphere')
 
-var sphere2 = new Four.Mesh.make('sphere');
-sphere2.position.set(10, 2, 4);
+var sphere2 = new Four.Mesh.Sphere();
+sphere2.position.set(0, 0, 0);
 
 sphere.makeBehaviorAndAdd('moveTo', {x:3,y:6,z:-10})
 sphere.pipe()
+
+sphere2.makeBehaviorAndAdd('moveTo', {x:-3,y:6,z:-10})
+sphere2.pipe()
 
 
 

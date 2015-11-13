@@ -14,9 +14,10 @@ Four.Mesh.make = function(string, preset) {
 
 Four.Mesh.Sphere = function(preset) {
   preset = preset || new Four.Preset('defaults').mesh.sphere
-  Four.Mesh.call(this)
+  Four.Mesh.call(this, preset)
 }
 
+// Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype)
 Four.Mesh.Sphere.constructor = Four.Mesh.Sphere
 
@@ -31,7 +32,7 @@ Four.Mesh.prototype.makeBehavior = function(tweenString) {
 
 // Adds a tween to this mesh's tweens array
 Four.Mesh.prototype.addBehavior = function(tween) {
-  s.tweens.push(tween)
+  this.tweens.push(tween)
   return this
 }
 
@@ -46,13 +47,13 @@ Four.Mesh.prototype.makeBehaviorAndAdd = function(tweenString) {
 Four.Mesh.prototype.pipe= function(index) {
   index = index || 0
   Four.arrangements[index].pipeline.pushTweens(this.tweens)
-  s.removeBehaviors()
-  return s;
+  this.removeBehaviors()
+  return this;
 }
 
 // Removes all tweens from this mesh
-Four.Mesh.prototype..removeBehaviors = function() {
-  s.tweens = []
+Four.Mesh.prototype.removeBehaviors = function() {
+  this.tweens = []
 }
 
 
