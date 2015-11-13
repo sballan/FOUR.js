@@ -59,6 +59,14 @@ Four.Help = function (arrangement) {
 
 var p = {};
 Four.Behavior = {
+  toPoints: function toPoints(v) {
+    return {
+      x: v.x,
+      y: v.y,
+      z: v.z,
+      paused: true
+    };
+  },
   moveTo: function moveTo(target, time) {
     var preset = new Four.Preset('defaults').behaviors.moveTo;
     //Give time a fallback value
@@ -69,7 +77,7 @@ Four.Behavior = {
     var tween = TweenMax.to(this.position, time, target);
     return tween;
   },
-  moveFrom: function moveFrom(time, target) {
+  moveFrom: function moveFrom(target, time) {
     var preset = new Four.Preset('defaults').behaviors.moveFrom;
     //Give time a fallback value
     time = time || preset.time;
@@ -77,14 +85,6 @@ Four.Behavior = {
 
     var tween = TweenMax.from(this.position, time, target);
     return tween;
-  },
-  toPoints: function toPoints(v) {
-    return {
-      x: v.x,
-      y: v.y,
-      z: v.z,
-      paused: true
-    };
   }
 
 };
@@ -133,36 +133,42 @@ Four.Mesh.sphere = function (preset) {
 
   s.position.set(x, y, z);
 
-  // Enable tweening
-  s.timeline = new TimelineMax();
+  // ---- Enable tweening ----
+  s.tweens = [];
 
+  // Creates a new tween based on the based in string, and returns it
   s.makeBehavior = function (tweenString) {
     var self = this;
     var args = Array.prototype.slice.call(arguments, 1);
     var tween = Four.Behavior[tweenString].apply(self, args);
+    this.tweens.push(tween);
     return tween;
   };
 
+  // Adds a tween to this mesh's tweens array
+  s.addBehavior = function (tween) {
+    s.tweens.push(tween);
+    return this;
+  };
+
+  // Creates a new tween and immediately adds it to this mesh's tweens array
   s.makeBehaviorAndAdd = function (tweenString) {
     var tween = this.makeBehavior.apply(this, arguments);
-    this.addToTimeline(tween);
-    return tween;
+    this.addBehavior(tween);
+    return this;
   };
 
-  s.addToTimeline = function (tween) {
-    s.timeline.add(tween);
-    return s;
-  };
-
+  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.
   s.pipe = function (index) {
     index = index || 0;
-    console.log(Four.arrangements[0]);
-    Four.arrangements[0].pipeline.pushTimeline(s.timeline, this);
+    Four.arrangements[index].pipeline.pushTweens(this.tweens);
+    s.removeBehaviors();
     return s;
   };
 
-  s.destroyTimeline = function () {
-    s.timeline = new TimelineMax();
+  // Removes all tweens from this mesh
+  s.removeBehaviors = function () {
+    s.tweens = [];
   };
 
   return s;
@@ -363,23 +369,26 @@ Four.Help.prototype = {
 Four.Pipeline.prototype = {
   init: function init() {
     this.masterTimeline = new TimelineMax();
+    this.masterTimeline.pause();
   },
-  pushTimeline: function pushTimeline(timeline) {
-    console.log("timeline", timeline);
-    this.TweenPipeline.push(timeline);
-    timeline.resume();
-    console.log("timeline pipline", this.TweenPipeline);
-  },
-  pipe: function pipe() {
+  pushTweens: function pushTweens(tweens) {
     var self = this;
-    self.TweenPipeline.forEach(function (timeline) {
-      self.masterTimeline.add(timeline);
-      console.log("mytimeplien", timeline);
-      timeline.resume();
+    console.log("the tweens", tweens);
+    tweens.forEach(function (tween) {
+      tween.resume();
+      self.masterTimeline.add(tween);
     });
   },
+  // pipe: function() {
+  //   var self = this
+  //   self.TweenPipeline.forEach(function(timeline) {
+  //     self.masterTimeline.add(timeline)
+  //     console.log("mytimeplien", timeline)
+  //     timeline.resume()
+  //   })
+  // },
   start: function start() {
-    this.pipe();
+    // this.pipe()
     this.masterTimeline.play();
   }
 
