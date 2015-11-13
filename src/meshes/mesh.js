@@ -46,7 +46,11 @@ Four.Mesh.prototype.makeBehaviorAndAdd = function(tweenString) {
 // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.
 Four.Mesh.prototype.pipe= function(index) {
   index = index || 0
-  Four.arrangements[index].pipeline.pushTweens(this.tweens)
+  var timeline = new TimelineMax()
+
+  timeline.insertMultiple(this.tweens)
+
+  Four.arrangements[index].pipeline.pushTweens(timeline)
   this.removeBehaviors()
   return this;
 }
