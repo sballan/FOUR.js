@@ -23,7 +23,6 @@ Four.Mesh.sphere = function(preset) {
 		s.position.set(x, y, z)
 
 		// Enable tweening
-		s.timeline = new TimelineMax()
 		s.tweens = []
 
 		s.makeBehavior = function(tweenString) {
@@ -40,19 +39,14 @@ Four.Mesh.sphere = function(preset) {
 			return tween
 		}
 
-		s.addToTimeline = function(tween) {
-			s.timeline.add(tween)
-			return s;
-		}
-
 		s.pipe= function(index) {
 			index = index || 0
 			Four.arrangements[index].pipeline.pushTweens(this.tweens)
 			return s;
 		}
 
-		s.destroyTimeline = function() {
-			s.timeline = new TimelineMax()
+		s.removeBehaviors = function() {
+			s.tweens = []
 		}
 
 		return s

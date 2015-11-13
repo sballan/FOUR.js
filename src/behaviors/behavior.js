@@ -10,7 +10,7 @@ Four.Behavior = {
     var tween = TweenMax.to(this.position, time, target)
     return tween;
   },
-  moveFrom: function(time, target) {
+  moveFrom: function(target, target) {
     var preset = new Four.Preset('defaults').behaviors.moveFrom
     //Give time a fallback value
     time = time || preset.time;
