@@ -9,7 +9,7 @@ var helper = new Four.Help()
 // Make a new arrangement, or "world" in which to create and control objects
 var arrangement = new Four.Arrangement(preset);
 
-preset.mesh.box.height = 1
+preset.mesh.box.height = 0.5
 preset.mesh.box.width = 8
 preset.mesh.box.depth = 8
 
@@ -19,10 +19,10 @@ var box = new Four.Mesh.Box()
 
 box.position.setZ(-80)
 box.position.setX(-80)
-
+var counter = 1
 var cb = function(mesh) {
   mesh.material = Four.Preset.makeMaterial()
-  mesh.makeBehaviorAndAdd('flipFlop', {x: 6}, 2)
+  mesh.makeBehaviorAndAdd('flipFlop', {x: counter += 0.2}, 2)
   mesh.pipe()
 }
 
