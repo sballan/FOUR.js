@@ -22,4 +22,4 @@ sphere.pipe()
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(sphere)
 arrangement.addToScene(sphere2)
-arrangement.start()
+// arrangement.start()

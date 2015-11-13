@@ -135,17 +135,19 @@ Four.Mesh.sphere = function (preset) {
 
   // Enable tweening
   s.timeline = new TimelineMax();
+  s.tweens = [];
 
   s.makeBehavior = function (tweenString) {
     var self = this;
     var args = Array.prototype.slice.call(arguments, 1);
     var tween = Four.Behavior[tweenString].apply(self, args);
+    this.tweens.push(tween);
     return tween;
   };
 
   s.makeBehaviorAndAdd = function (tweenString) {
     var tween = this.makeBehavior.apply(this, arguments);
-    this.addToTimeline(tween);
+    this.tweens.push(tween);
     return tween;
   };
 
@@ -156,8 +158,7 @@ Four.Mesh.sphere = function (preset) {
 
   s.pipe = function (index) {
     index = index || 0;
-    console.log(Four.arrangements[0]);
-    Four.arrangements[0].pipeline.pushTimeline(s.timeline, this);
+    Four.arrangements[index].pipeline.pushTweens(this.tweens);
     return s;
   };
 
@@ -363,12 +364,21 @@ Four.Help.prototype = {
 Four.Pipeline.prototype = {
   init: function init() {
     this.masterTimeline = new TimelineMax();
+    this.masterTimeline.pause();
   },
   pushTimeline: function pushTimeline(timeline) {
     console.log("timeline", timeline);
     this.TweenPipeline.push(timeline);
     timeline.resume();
     console.log("timeline pipline", this.TweenPipeline);
+  },
+  pushTweens: function pushTweens(tweens) {
+    var self = this;
+    console.log("the tweens", tweens);
+    tweens.forEach(function (tween) {
+      tween.resume();
+      self.masterTimeline.add(tween);
+    });
   },
   pipe: function pipe() {
     var self = this;
