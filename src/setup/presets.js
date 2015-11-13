@@ -15,6 +15,15 @@ Four.Preset.prototype.resetDefaults = function(preset) {
 	Four.Preset.data.currentDefaults = Four.Preset.data.defaults
 }
 
+Four.Preset.makeMaterial = function() {
+	return new THREE.MeshLambertMaterial({
+		color: Four.Preset.randomColor(),
+		specular: 0xb4b4b4b4,
+		shininess: 2,
+		reflectivity: 2
+	})
+}
+
 Four.Preset.randomColor = function () {
   var min = 64;
   var max = 224;

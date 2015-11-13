@@ -18,7 +18,7 @@ Four.Preset.data = {
     ],
     lights: {
       positionX: 50,
-      positionY: -20,
+      positionY: 20,
       positionZ: 50,
       color: 0xFFFFFF
     },

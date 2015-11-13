@@ -9,28 +9,30 @@ var helper = new Four.Help()
 // Make a new arrangement, or "world" in which to create and control objects
 var arrangement = new Four.Arrangement(preset);
 
-// Make a new sphere object
-var sphere = new Four.Mesh.Sphere()
+preset.mesh.box.height = 1
+preset.mesh.box.width = 8
+preset.mesh.box.depth = 8
 
-var sphere2 = new Four.Mesh.Sphere();
-sphere2.position.set(0, 0, 0);
 
-sphere.makeBehaviorAndAdd('moveTo', {x:15,y:6,z:-10})
-sphere.pipe()
-
-sphere2.makeBehaviorAndAdd('moveBackAndForth', {x:-3,y:6,z:-10})
-sphere2.pipe()
 
 var box = new Four.Mesh.Box()
-box.makeBehaviorAndAdd('moveBackAndForth', {x:-70,y:50,z:-10})
-box.pipe()
+
+box.position.setZ(-80)
+box.position.setX(-80)
+
+for(var i = 0; i < 16; i++) {
+  box.position.setX(-80)
+  box.position.z+=10
+  box.createSet(16, {x:10, y:0, z: 0}, function(mesh) {
+    mesh.material = Four.Preset.makeMaterial()
+  })
+}
+// box.pipe()
 
 
 
 
 
 // Place the new sphere object in the arrangement's scene
-arrangement.addToScene(sphere)
-arrangement.addToScene(sphere2)
 arrangement.addToScene(box)
 arrangement.start()

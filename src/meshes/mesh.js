@@ -12,22 +12,26 @@ Four.Mesh.make = function(string, preset) {
 }
 
 // createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSet = function(number, targetSpacing) {
+Four.Mesh.prototype.createSet = function(number, spacing, cb) {
   var self = this;
   var scene = Four.arrangements[0].scene;
   var meshes = []
 
-  targetSpacing = new THREE.Vector3(targetSpacing.x, targetSpacing.y, targetSpacing.z)
+  var p = self.position
+  var pSave = self.position
+  spacing = new THREE.Vector3(spacing.x, spacing.y, spacing.z)
 
-  var spacing = targetSpacing;
   for(var i = 0; i < number; i++) {
     var mesh = this.clone()
+    mesh.position.set(p.x, p.y, p.z)
     mesh.position.add(spacing)
     scene.add(mesh)
     meshes.push(mesh)
-    console.log(spacing)
-    spacing.add(targetSpacing)
+    p.add(spacing)
+    
+    if(cb) cb(mesh)
   }
+  self.position.set(pSave.x, pSave.y, pSave.z)
   return meshes
 }
 
