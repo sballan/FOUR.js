@@ -21,10 +21,15 @@ sphere.pipe()
 sphere2.makeBehaviorAndAdd('moveBackAndForth', {x:-3,y:6,z:-10})
 sphere2.pipe()
 
+var sphere3 = sphere2.clone()
+sphere3.makeBehaviorAndAdd('moveBackAndForth', {x:30,y:20,z:-10})
+sphere3.pipe()
+
 
 
 
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(sphere)
 arrangement.addToScene(sphere2)
+arrangement.addToScene(sphere3)
 arrangement.start()

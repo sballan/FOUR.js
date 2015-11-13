@@ -15,9 +15,13 @@ Four.Mesh = function(preset) {
 	preset = preset || new Four.Preset('defaults').mesh
 	var geometry = preset.geometry
 
-	var materialType = preset.materialType
-	var materialOptions = preset.materialOptions
-	var material = new THREE[materialType](materialOptions)
+	if(!preset.material) {
+		var materialType = preset.materialType
+		var materialOptions = preset.materialOptions
+		var material = new THREE[materialType](materialOptions)
+	} else {
+		var material = preset.material
+	}
 
 	THREE.Mesh.call(this, geometry, material)
 

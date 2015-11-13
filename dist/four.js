@@ -16,9 +16,13 @@ Four.Mesh = function (preset) {
   preset = preset || new Four.Preset('defaults').mesh;
   var geometry = preset.geometry;
 
-  var materialType = preset.materialType;
-  var materialOptions = preset.materialOptions;
-  var material = new THREE[materialType](materialOptions);
+  if (!preset.material) {
+    var materialType = preset.materialType;
+    var materialOptions = preset.materialOptions;
+    var material = new THREE[materialType](materialOptions);
+  } else {
+    var material = preset.material;
+  }
 
   THREE.Mesh.call(this, geometry, material);
 
@@ -75,142 +79,6 @@ Four.Help = function (arrangement) {
   return response;
 };
 
-//Class method to make a new mesh
-Four.Mesh.make = function (string, preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh;
-
-  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-  var makeNewMesh = Four.Mesh[string];
-
-  // type will become the presets that should be passed to this new mesh
-  var type = preset[string];
-
-  return new makeNewMesh(type);
-};
-
-Four.Mesh.Sphere = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere;
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
-
-// Creates a new tween based on the based in string, and returns it
-Four.Mesh.prototype.makeBehavior = function (tweenString) {
-
-  var self = this;
-  var args = Array.prototype.slice.call(arguments, 1);
-  var tween = Four.Behavior[tweenString].apply(self, args);
-  this.tweens.push(tween);
-  return tween;
-};
-
-// Adds a tween to this mesh's tweens array
-Four.Mesh.prototype.addBehavior = function (tween) {
-  this.tweens.push(tween);
-  return this;
-};
-
-// Creates a new tween and immediately adds it to this mesh's tweens array
-Four.Mesh.prototype.makeBehaviorAndAdd = function (tweenString) {
-
-  var tween = this.makeBehavior.apply(this, arguments);
-  this.addBehavior(tween);
-  return this;
-};
-
-// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-Four.Mesh.prototype.pipe = function (index) {
-  index = index || 0;
-  var timeline = new TimelineMax();
-
-  timeline.insertMultiple(this.tweens);
-
-  Four.arrangements[index].pipeline.pushTimeline(timeline);
-  this.removeBehaviors();
-  return this;
-};
-
-// Removes all tweens from this mesh
-Four.Mesh.prototype.removeBehaviors = function () {
-  this.tweens = [];
-};
-
-//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-Four.Mesh.prototype.processArgs = function () {
-  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-    return point;
-  } else return false;
-};
-
-// Four.Mesh.sphere = function(preset) {
-// 		if(!preset) preset = new Four.Preset('defaults').mesh.sphere
-// 		var x = preset.x,
-// 			y = preset.y,
-// 			z = preset.z,
-// 			radius = preset.radius,
-// 			widthSegments = preset.widthSegments,
-// 			heightSegments = preset.heightSegments,
-// 			materialType = preset.materialType,
-// 			materialOptions = preset.materialOptions
-//
-// 		var center = new THREE.Vector3(x, y, z)
-//
-// 		var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments)
-// 		var material = new THREE[materialType](materialOptions)
-//
-//
-// 		// New mesh may be physics enabled or not physics enabled
-// 		var s;
-// 		if(!preset.physics) s = new THREE.Mesh(geometry, material)
-// 			else s = new Physijs.SphereMesh(geometry, material)
-//
-// 		s.position.set(x, y, z)
-//
-// 		// ---- Enable tweening ----
-// 		s.tweens = []
-
-// // Creates a new tween based on the based in string, and returns it
-// s.makeBehavior = function(tweenString) {
-// 	var self = this
-// 	var args = Array.prototype.slice.call(arguments, 1)
-// 	var tween = Four.Behavior[tweenString].apply(self, args)
-// 	this.tweens.push(tween);
-// 	return tween;
-// }
-//
-// // Adds a tween to this mesh's tweens array
-// s.addBehavior = function(tween) {
-// 	s.tweens.push(tween)
-// 	return this
-// }
-//
-// // Creates a new tween and immediately adds it to this mesh's tweens array
-// s.makeBehaviorAndAdd = function(tweenString) {
-// 	var tween = this.makeBehavior.apply(this, arguments)
-// 	this.addBehavior(tween);
-// 	return this
-// }
-//
-// // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.
-// s.pipe= function(index) {
-// 	index = index || 0
-// 	Four.arrangements[index].pipeline.pushTweens(this.tweens)
-// 	s.removeBehaviors()
-// 	return s;
-// }
-//
-// // Removes all tweens from this mesh
-// s.removeBehaviors = function() {
-// 	s.tweens = []
-// }
-//
-// 		return s
-// }
-
 var p = {};
 Four.Behavior = {
   toPoints: function toPoints(v) {
@@ -253,6 +121,90 @@ Four.Behavior = {
     return tween;
   }
 
+};
+
+// Creates a new tween based on the based in string, and returns it
+Four.Mesh.prototype.makeBehavior = function (tweenString) {
+
+  var self = this;
+  var args = Array.prototype.slice.call(arguments, 1);
+  var tween = Four.Behavior[tweenString].apply(self, args);
+  this.tweens.push(tween);
+  return tween;
+};
+
+// Adds a tween to this mesh's tweens array
+Four.Mesh.prototype.addBehavior = function (tween) {
+  this.tweens.push(tween);
+  return this;
+};
+
+// Creates a new tween and immediately adds it to this mesh's tweens array
+Four.Mesh.prototype.makeBehaviorAndAdd = function (tweenString) {
+
+  var tween = this.makeBehavior.apply(this, arguments);
+  this.addBehavior(tween);
+  return this;
+};
+
+// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+Four.Mesh.prototype.pipe = function (index) {
+  index = index || 0;
+  var timeline = new TimelineMax();
+
+  timeline.insertMultiple(this.tweens);
+
+  Four.arrangements[index].pipeline.pushTimeline(timeline);
+  this.removeBehaviors();
+  return this;
+};
+
+// Removes all tweens from this mesh
+Four.Mesh.prototype.removeBehaviors = function () {
+  this.tweens = [];
+};
+
+Four.Mesh.Sphere = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.sphere;
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+
+//Class method to make a new mesh
+Four.Mesh.make = function (string, preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh;
+
+  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+  var makeNewMesh = Four.Mesh[string];
+
+  // type will become the presets that should be passed to this new mesh
+  var type = preset[string];
+
+  return new makeNewMesh(type);
+};
+
+Four.Mesh.prototype.createSet = function (number, spacing) {
+  var self = this;
+  var scene = Four.arrangements[index].scene;
+};
+
+Four.Mesh.prototype.clone = function () {
+  var preset = new Four.Preset('defaults').mesh;
+  preset.geometry = this.geometry;
+  preset.material = this.material;
+
+  return new Four.Mesh.constructor(preset);
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
 };
 
 Four.Preset.prototype.simplePhysics = function () {
