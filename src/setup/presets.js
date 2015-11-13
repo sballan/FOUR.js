@@ -7,7 +7,7 @@ Four.Preset.prototype = {
 			controls: {
 				OrbitControls: true,
 				lookAtScene: true
-			}, 
+			},
 			renderer: {
 				clearColor: 0x999999,
     		shadowMap: true,
@@ -37,6 +37,14 @@ Four.Preset.prototype = {
 				physics: false
 			},
 			mesh: {
+				geometry: new THREE.SphereGeometry(),
+				materialType: 'MeshPhongMaterial',
+				materialOptions: {
+					color: this.randomColor(),
+					specular: 0xb4b4b4b4,
+					shininess: 2,
+					reflectivity: 2
+				},
 				sphere: {
 					physics: false,
 					x: 0,

@@ -9,9 +9,26 @@ Four.addArrangement = function (arrangement) {
 };
 
 Four.Setup = function (options) {
-
   this.domSelector = "#webGL-container";
 };
+
+Four.Mesh = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh;
+  var geometry = preset.geometry;
+
+  var materialType = preset.materialType;
+  var materialOptions = preset.materialOptions;
+  var material = new THREE[materialType](materialOptions);
+
+  THREE.Mesh.call(this, geometry, material);
+
+  this.tweens = [];
+  // this.init()
+};
+
+Four.Mesh.prototype = Object.create(THREE.Mesh.prototype);
+
+Four.Mesh.constructor = Four.Mesh;
 
 Four.Arrangement = function (preset) {
   if (!preset) preset = new Four.Preset('defaults');
@@ -89,26 +106,54 @@ Four.Behavior = {
 
 };
 
-Four.Mesh = {
-  make: function make(string, preset) {
-    if (!preset) preset = new Four.Preset('defaults').mesh;
+//Class method to make a new mesh
+Four.Mesh.make = function (string, preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh;
 
-    // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-    var makeNewMesh = Four.Mesh[string];
+  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+  var makeNewMesh = Four.Mesh[string];
 
-    // type will become the presets that should be passed to this new mesh
-    var type = preset[string];
+  // type will become the presets that should be passed to this new mesh
+  var type = preset[string];
 
-    return makeNewMesh(type);
-  },
-  //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-  processArgs: function processArgs() {
-    if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-      var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-      return point;
-    } else return false;
-  }
+  return makeNewMesh(type);
+};
+// Creates a new tween based on the based in string, and returns it
+Four.Mesh.prototype.makeBehavior = function (tweenString) {
+  var self = this;
+  var args = Array.prototype.slice.call(arguments, 1);
+  var tween = Four.Behavior[tweenString].apply(self, args);
+  this.tweens.push(tween);
+  return tween;
+};
 
+// Adds a tween to this mesh's tweens array
+Four.Mesh.prototype.addBehavior = function (tween) {
+  s.tweens.push(tween);
+  return this;
+};
+
+// Creates a new tween and immediately adds it to this mesh's tweens array
+Four.Mesh.prototype.makeBehaviorAndAdd = function (tweenString) {
+  var tween = this.makeBehavior.apply(this, arguments);
+  this.addBehavior(tween);
+  return this;
+};
+
+// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.
+Four.Mesh.prototype.pipe = function (index) {
+  index = index || 0;
+  Four.arrangements[index].pipeline.pushTweens(this.tweens);
+  s.removeBehaviors();
+  return s;
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
 };
 
 Four.Mesh.sphere = function (preset) {
@@ -431,6 +476,13 @@ Four.Preset.prototype = {
         physics: false
       },
       mesh: {
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: this.randomColor(),
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        },
         sphere: {
           physics: false,
           x: 0,
