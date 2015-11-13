@@ -33,15 +33,21 @@ Four.Mesh.sphere = function(preset) {
 			return tween;
 		}
 
+		s.addBehavior = function(tween) {
+			s.tweens.push(tween)
+			return this
+		}
+
 		s.makeBehaviorAndAdd = function(tweenString) {
 			var tween = this.makeBehavior.apply(this, arguments)
-			this.tweens.push(tween);
-			return tween
+			this.addBehavior(tween);
+			return this
 		}
 
 		s.pipe= function(index) {
 			index = index || 0
 			Four.arrangements[index].pipeline.pushTweens(this.tweens)
+			s.removeBehaviors()
 			return s;
 		}
 

@@ -19,6 +19,19 @@ sphere.makeBehaviorAndAdd('moveTo', sphere2.position);
 sphere.makeBehaviorAndAdd('moveTo', sphere.position)
 sphere.pipe()
 
+var pos1 = {}
+
+var b1 = sphere.makeBehavior('moveTo', {x:5, y:15, z:3});
+var b2 = sphere.makeBehavior('moveTo', {x:6, y:4, z:-4});
+
+
+
+sphere.addBehavior(b1)
+  .addBehavior(b2)
+  .pipe()
+
+
+
 
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(sphere)
