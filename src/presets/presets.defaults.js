@@ -6,7 +6,8 @@ Four.Preset.data = {
       OrbitControls: true,
       lookAtScene: true,
       lookAtSceneContinously: false,
-      resize: true
+      resize: true,
+      mouse: false
     },
     renderer: {
       clearColor: 0x999999,

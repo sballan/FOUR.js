@@ -10,6 +10,22 @@ var helper = new Four.Help()
 var arrangement = new Four.Arrangement(preset);
 var camera = arrangement.camera
 
+var box = new Four.Mesh.Box()
+arrangement.addToScene(box)
+
+box.createSetRow(7, {y:4})
+
+
+// Place the new sphere object in the arrangement's scene
+arrangement.start()
+
+
+
+
+
+
+
+/*
 preset.mesh.box.height = 0.5
 preset.mesh.box.width = 8
 preset.mesh.box.depth = 8
@@ -32,7 +48,4 @@ for(var i = 0; i < 16; i++) {
   box.position.z+=10
   box.createSet(16, {x:10, y:0, z: 0}, cb)
 }
-
-// Place the new sphere object in the arrangement's scene
-arrangement.addToScene(box)
-arrangement.start()
+*/

@@ -12,28 +12,82 @@ Four.Mesh.make = function(string, preset) {
 }
 
 // createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSet = function(number, spacing, cb) {
+//
+// Four.Mesh.prototype.createSet = function(number, spacing, cb) {
+//   var self = this;
+//   var scene = Four.arrangements[0].scene;
+//   var meshes = []
+//
+//   var p = self.position
+//   var pSave = self.position
+//   spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0)
+//
+//   if(typeof cb === 'string') {
+//     cb = Four.Mesh[cb]
+//   }
+//
+//   for(var i = 0; i < number; i++) {
+//     var mesh = this.clone()
+//     mesh.position.set(p.x, p.y, p.z)
+//     mesh.position.add(spacing)
+//     scene.add(mesh)
+//     meshes.push(mesh)
+//     p.add(spacing)
+//
+//     //In the callback, we can affect the position of the next item AND the mesh
+//     if(cb) cb(mesh, p)
+//   }
+//   self.position.set(pSave.x, pSave.y, pSave.z)
+//   return meshes
+// }
+
+Four.Mesh.prototype.createSet = function(number, cb) {
+  var self = this;
+
+  if(typeof cb === 'string') {
+    cb = Four.Mesh[cb]
+  }
+
+  for(var i = 0; i < number; i++) {
+    var mesh = self.clone()
+    if(cb) cb(mesh, p)
+  }
+}
+
+Four.Mesh.prototype.createSetRow = function(number, spacing) {
   var self = this;
   var scene = Four.arrangements[0].scene;
   var meshes = []
 
   var p = self.position
   var pSave = self.position
-  spacing = new THREE.Vector3(spacing.x, spacing.y, spacing.z)
+  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0)
 
-  for(var i = 0; i < number; i++) {
-    var mesh = this.clone()
+  function createRow(mesh) {
+    p.add(spacing)
     mesh.position.set(p.x, p.y, p.z)
-    mesh.position.add(spacing)
+    // mesh.position.add(spacing)
     scene.add(mesh)
     meshes.push(mesh)
-    p.add(spacing)
-    
-    if(cb) cb(mesh)
   }
-  self.position.set(pSave.x, pSave.y, pSave.z)
+
+  self.createSet(number, createRow)
+
   return meshes
 }
+
+Four.Mesh.prototype.createSetCircle = function(number, radius, cb) {
+  var self = this;
+  var angleSize = Math.PI * 2 / number
+  var currentAngle = angleSize
+  var center = self.position.subtract({x:0, y: -radius, z:0})
+
+  function circle(mesh, p) {
+    var x = center.x + (radius * Math.cos(angle))
+    var y = center.y + (radius * Math.sin(angle))
+  }
+}
+
 
 Four.Mesh.prototype.clone = function() {
   var preset = new Four.Preset('defaults').mesh
