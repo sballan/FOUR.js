@@ -15,7 +15,7 @@ Four.Mesh.prototype.addBehavior = function(tween) {
 }
 
 // Creates a new tween and immediately adds it to this mesh's tweens array
-Four.Mesh.prototype.makeBehaviorAndAdd = function(tweenString) {
+Four.Mesh.prototype.makeBehaviorAndAdd = function() {
 
   var tween = this.makeBehavior.apply(this, arguments)
   this.addBehavior(tween);

@@ -29,7 +29,7 @@ Four.Preset.data = {
       far: 500,
       positionX: 0,
       positionY: 60,
-      positionZ: 80 
+      positionZ: 80
     },
     scene: {
       physics: false
@@ -92,6 +92,21 @@ Four.Preset.data = {
         height: 20,
         radiusSegments: 32,
         heightSegments: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      ring: {
+        innerRadius: 3,
+        outerRadius: 5,
+        thetaSegments: 32,
+        phiSegments: 8,
+        thetaStart: 0,
+        thetaLength: Math.PI * 2,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,

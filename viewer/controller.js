@@ -22,7 +22,7 @@ box.position.setX(-80)
 var counter = 1
 var cb = function(mesh) {
   mesh.material = Four.Preset.makeMaterial()
-  mesh.makeBehaviorAndAdd('flipFlop', {x: counter += 0.1}, 2)
+  mesh.makeBehaviorAndAdd('flipFlop', {x: counter += 0.1}, 3)
   mesh.pipe()
 }
 
@@ -32,7 +32,7 @@ for(var i = 0; i < 16; i++) {
   box.createSet(16, {x:10, y:0, z: 0}, cb)
 }
 // box.pipe()
-var c = new Four.Mesh.Cylinder()
+var c = new Four.Mesh.Ring()
 arrangement.addToScene(c)
 
 

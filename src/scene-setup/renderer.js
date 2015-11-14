@@ -7,7 +7,7 @@ Four.Setup.prototype.Renderer = function (preset) {
   var antialias = preset.antialias
 
   var renderer = new THREE.WebGLRenderer({
-    antialias: false
+    antialias: antialias
   })
   renderer.setClearColor(clearColor);
   renderer.setSize(window.innerWidth, window.innerHeight)

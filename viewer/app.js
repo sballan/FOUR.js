@@ -10,11 +10,11 @@ app.use(express.static(__dirname + '/src'));
 
 app.use(express.static(__dirname + '/viewer'));
 
-router.get('/', function(req, res, next) {
+router.get('/', function() {
 	send.send('/index.html')
 })
 
 
 module.exports = router;
 
-var server = app.listen(3000);
+app.listen(3000);
