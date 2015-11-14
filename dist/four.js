@@ -319,6 +319,25 @@ Four.Mesh.Torus = function (preset) {
 Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Torus.constructor = Four.Mesh.Torus;
 
+Four.Mesh.TorusKnot = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.torusKnot;
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var p = preset.p;
+  var q = preset.q;
+  var heightScale = preset.heightScale;
+
+  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
+
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
@@ -440,6 +459,22 @@ Four.Preset.data = {
         radialSegments: 16,
         tubularSegments: 50,
         arc: Math.PI * 2,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      torusKnot: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 30,
+        tubularSegments: 50,
+        p: 2,
+        q: 3,
+        heightScale: 1,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,

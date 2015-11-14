@@ -128,6 +128,22 @@ Four.Preset.data = {
           shininess: 2,
           reflectivity: 2
         }
+      },
+      torusKnot: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 30,
+        tubularSegments: 50,
+        p: 2,
+        q: 3,
+        heightScale: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
       }
     },
     behaviors: {
