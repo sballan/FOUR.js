@@ -1,5 +1,5 @@
 var p = {}
-Four.Behavior = {
+Four.Behavior.behaviors = {
   toPoints: function(v) {
     return {
       x: v.x,

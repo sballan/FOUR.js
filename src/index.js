@@ -28,7 +28,9 @@ Four.Mesh = function(preset) {
 
 	this.tweens = []
 	this.physics = false
-	// this.init()
+
+	// By adding behaviors this way, we can get the effects of modifying the underlying Object3D object without doing a lot of extra work.
+	Four.Behavior.Apply(this)
 }
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -57,6 +59,8 @@ Four.Preset = function(options) {
 
 	return this[options]()
 }
+
+Four.Behavior = {}
 
 Four.Pipeline = function() {
   this.TweenPipeline = [];

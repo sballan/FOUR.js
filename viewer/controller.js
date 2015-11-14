@@ -31,9 +31,6 @@ for(var i = 0; i < 16; i++) {
   box.position.z+=10
   box.createSet(16, {x:10, y:0, z: 0}, cb)
 }
-// box.pipe()
-var c = new Four.Mesh.TorusKnot()
-arrangement.addToScene(c)
 
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(box)
