@@ -8,6 +8,7 @@ var helper = new Four.Help()
 
 // Make a new arrangement, or "world" in which to create and control objects
 var arrangement = new Four.Arrangement(preset);
+var camera = arrangement.camera
 
 preset.mesh.box.height = 0.5
 preset.mesh.box.width = 8

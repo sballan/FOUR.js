@@ -15,8 +15,7 @@ Four.Setup.prototype.Camera = function(preset) {
 
   Four.Behavior.Apply(camera)
 
-    camera.makeBehaviorAndAdd('moveTo', {x: 40, y: 50, z: 10}, 5)
-    camera.pipe()
+
 
   return camera
 }
