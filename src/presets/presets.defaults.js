@@ -114,6 +114,20 @@ Four.Preset.data = {
           shininess: 2,
           reflectivity: 2
         }
+      },
+      torus: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 16,
+        tubularSegments: 50,
+        arc: Math.PI * 2,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
       }
     },
     behaviors: {

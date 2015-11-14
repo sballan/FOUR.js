@@ -132,6 +132,193 @@ Four.Behavior = {
 
 };
 
+// Creates a new tween based on the based in string, and returns it
+Four.Mesh.prototype.makeBehavior = function (tweenString) {
+
+  var self = this;
+  var args = Array.prototype.slice.call(arguments, 1);
+  var tween = Four.Behavior[tweenString].apply(self, args);
+  this.tweens.push(tween);
+  return tween;
+};
+
+// Adds a tween to this mesh's tweens array
+Four.Mesh.prototype.addBehavior = function (tween) {
+  this.tweens.push(tween);
+  return this;
+};
+
+// Creates a new tween and immediately adds it to this mesh's tweens array
+Four.Mesh.prototype.makeBehaviorAndAdd = function () {
+
+  var tween = this.makeBehavior.apply(this, arguments);
+  this.addBehavior(tween);
+  return this;
+};
+
+// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+Four.Mesh.prototype.pipe = function (index) {
+  index = index || 0;
+  var timeline = new TimelineMax();
+
+  timeline.insertMultiple(this.tweens);
+
+  Four.arrangements[index].pipeline.pushTimeline(timeline);
+  this.removeBehaviors();
+  return this;
+};
+
+// Removes all tweens from this mesh
+Four.Mesh.prototype.removeBehaviors = function () {
+  this.tweens = [];
+};
+
+Four.Mesh.Box = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.box;
+
+  var width = preset.width;
+  var height = preset.height;
+  var depth = preset.depth;
+
+  preset.geometry = new THREE.BoxGeometry(width, height, depth);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Box.constructor = Four.Mesh.Box;
+
+Four.Mesh.Circle = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.circle;
+
+  var radius = preset.radius;
+  var segments = preset.segments;
+
+  preset.geometry = new THREE.CircleGeometry(radius, segments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Circle.constructor = Four.Mesh.Circle;
+
+Four.Mesh.Cylinder = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.cylinder;
+
+  var radiusTop = preset.radiusTop;
+  var radiusBottom = preset.radiusBottom;
+  var height = preset.height;
+  var radiusSegments = preset.radiusSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
+
+//Class method to make a new mesh
+Four.Mesh.make = function (string, preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh;
+
+  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+  var makeNewMesh = Four.Mesh[string];
+
+  // type will become the presets that should be passed to this new mesh
+  var type = preset[string];
+
+  return new makeNewMesh(type);
+};
+
+// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSet = function (number, spacing, cb) {
+  var self = this;
+  var scene = Four.arrangements[0].scene;
+  var meshes = [];
+
+  var p = self.position;
+  var pSave = self.position;
+  spacing = new THREE.Vector3(spacing.x, spacing.y, spacing.z);
+
+  for (var i = 0; i < number; i++) {
+    var mesh = this.clone();
+    mesh.position.set(p.x, p.y, p.z);
+    mesh.position.add(spacing);
+    scene.add(mesh);
+    meshes.push(mesh);
+    p.add(spacing);
+
+    if (cb) cb(mesh);
+  }
+  self.position.set(pSave.x, pSave.y, pSave.z);
+  return meshes;
+};
+
+Four.Mesh.prototype.clone = function () {
+  var preset = new Four.Preset('defaults').mesh;
+  preset.geometry = this.geometry;
+  preset.material = this.material;
+
+  return new Four.Mesh.constructor(preset);
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
+};
+
+Four.Mesh.Ring = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.ring;
+
+  var innerRadius = preset.innerRadius;
+  var outerRadius = preset.outerRadius;
+  var thetaSegments = preset.thetaSegments;
+
+  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Ring.constructor = Four.Mesh.Ring;
+
+Four.Mesh.Sphere = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.sphere;
+
+  var radius = preset.radius;
+  var widthSegments = preset.widthSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+
+Four.Mesh.Torus = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.torus;
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var arc = preset.arc;
+
+  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Torus.constructor = Four.Mesh.Torus;
+
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
@@ -239,6 +426,20 @@ Four.Preset.data = {
         phiSegments: 8,
         thetaStart: 0,
         thetaLength: Math.PI * 2,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      torus: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 16,
+        tubularSegments: 50,
+        arc: Math.PI * 2,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,
@@ -520,173 +721,3 @@ Four.Utils = {
   }
 
 };
-
-// Creates a new tween based on the based in string, and returns it
-Four.Mesh.prototype.makeBehavior = function (tweenString) {
-
-  var self = this;
-  var args = Array.prototype.slice.call(arguments, 1);
-  var tween = Four.Behavior[tweenString].apply(self, args);
-  this.tweens.push(tween);
-  return tween;
-};
-
-// Adds a tween to this mesh's tweens array
-Four.Mesh.prototype.addBehavior = function (tween) {
-  this.tweens.push(tween);
-  return this;
-};
-
-// Creates a new tween and immediately adds it to this mesh's tweens array
-Four.Mesh.prototype.makeBehaviorAndAdd = function () {
-
-  var tween = this.makeBehavior.apply(this, arguments);
-  this.addBehavior(tween);
-  return this;
-};
-
-// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-Four.Mesh.prototype.pipe = function (index) {
-  index = index || 0;
-  var timeline = new TimelineMax();
-
-  timeline.insertMultiple(this.tweens);
-
-  Four.arrangements[index].pipeline.pushTimeline(timeline);
-  this.removeBehaviors();
-  return this;
-};
-
-// Removes all tweens from this mesh
-Four.Mesh.prototype.removeBehaviors = function () {
-  this.tweens = [];
-};
-
-Four.Mesh.Box = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.box;
-
-  var width = preset.width;
-  var height = preset.height;
-  var depth = preset.depth;
-
-  preset.geometry = new THREE.BoxGeometry(width, height, depth);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Box.constructor = Four.Mesh.Box;
-
-Four.Mesh.Circle = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.circle;
-
-  var radius = preset.radius;
-  var segments = preset.segments;
-
-  preset.geometry = new THREE.CircleGeometry(radius, segments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Circle.constructor = Four.Mesh.Circle;
-
-Four.Mesh.Cylinder = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.cylinder;
-
-  var radiusTop = preset.radiusTop;
-  var radiusBottom = preset.radiusBottom;
-  var height = preset.height;
-  var radiusSegments = preset.radiusSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
-
-//Class method to make a new mesh
-Four.Mesh.make = function (string, preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh;
-
-  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-  var makeNewMesh = Four.Mesh[string];
-
-  // type will become the presets that should be passed to this new mesh
-  var type = preset[string];
-
-  return new makeNewMesh(type);
-};
-
-// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSet = function (number, spacing, cb) {
-  var self = this;
-  var scene = Four.arrangements[0].scene;
-  var meshes = [];
-
-  var p = self.position;
-  var pSave = self.position;
-  spacing = new THREE.Vector3(spacing.x, spacing.y, spacing.z);
-
-  for (var i = 0; i < number; i++) {
-    var mesh = this.clone();
-    mesh.position.set(p.x, p.y, p.z);
-    mesh.position.add(spacing);
-    scene.add(mesh);
-    meshes.push(mesh);
-    p.add(spacing);
-
-    if (cb) cb(mesh);
-  }
-  self.position.set(pSave.x, pSave.y, pSave.z);
-  return meshes;
-};
-
-Four.Mesh.prototype.clone = function () {
-  var preset = new Four.Preset('defaults').mesh;
-  preset.geometry = this.geometry;
-  preset.material = this.material;
-
-  return new Four.Mesh.constructor(preset);
-};
-
-//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-Four.Mesh.prototype.processArgs = function () {
-  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-    return point;
-  } else return false;
-};
-
-Four.Mesh.Ring = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.ring;
-
-  var innerRadius = preset.innerRadius;
-  var outerRadius = preset.outerRadius;
-  var thetaSegments = preset.thetaSegments;
-
-  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Ring.constructor = Four.Mesh.Ring;
-
-Four.Mesh.Sphere = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere;
-
-  var radius = preset.radius;
-  var widthSegments = preset.widthSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
