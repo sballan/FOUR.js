@@ -1,7 +1,7 @@
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: false,
+    debugMode: true,
     controls: {
       OrbitControls: true,
       lookAtScene: true,

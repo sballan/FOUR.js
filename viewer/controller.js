@@ -13,7 +13,7 @@ var camera = arrangement.camera
 var box = new Four.Mesh.Box()
 arrangement.addToScene(box)
 
-box.createSetRow(7, {y:4})
+box.createSetCircle(8, 20)
 
 
 // Place the new sphere object in the arrangement's scene

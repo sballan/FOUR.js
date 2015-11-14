@@ -83,6 +83,111 @@ Four.Help = function (arrangement) {
   return response;
 };
 
+var p = {};
+Four.Behavior.behaviors = {
+  flipFlop: function flipFlop(amount, time) {
+    amount.repeat = -1;
+    amount.yoyo = true;
+    amount.delay = 1;
+    var tween = TweenMax.to(this.rotation, time, amount);
+    return tween;
+  },
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveBackAndForth: function moveBackAndForth(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+    target.repeat = 5;
+    target.yoyo = true;
+
+    var tween = TweenMax.to(this.position, time, target);
+
+    return tween;
+  },
+  moveFrom: function moveFrom(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  }
+
+};
+
+Four.Behavior.toPoints = function (v) {
+  return {
+    x: v.x,
+    y: v.y,
+    z: v.z
+  };
+};
+
+Four.Behavior.Apply = function (mesh) {
+  var handlers = Four.Behavior.Handler;
+
+  for (var handler in handlers) {
+    mesh[handler] = handlers[handler];
+    mesh.tweens = [];
+  }
+};
+
+Four.Behavior.Handler = {
+  // Creates a new tween based on the based in string, and returns it
+  makeBehavior: function makeBehavior(tweenString) {
+
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
+    this.tweens.push(tween);
+    return tween;
+  },
+
+  // Adds a tween to this mesh's tweens array
+  addBehavior: function addBehavior(tween) {
+    this.tweens.push(tween);
+    return this;
+  },
+
+  // Creates a new tween and immediately adds it to this mesh's tweens array
+  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
+
+    var tween = this.makeBehavior.apply(this, arguments);
+    this.addBehavior(tween);
+    return this;
+  },
+
+  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+  pipe: function pipe(index) {
+    index = index || 0;
+    var timeline = new TimelineMax();
+
+    timeline.insertMultiple(this.tweens);
+
+    Four.arrangements[index].pipeline.pushTimeline(timeline);
+    this.removeBehaviors();
+    return this;
+  },
+
+  // Removes all tweens from this mesh
+  removeBehaviors: function removeBehaviors() {
+    this.tweens = [];
+  }
+
+};
+
 Four.Mesh.Box = function (preset) {
   preset = preset || new Four.Preset('defaults').mesh.box;
 
@@ -191,13 +296,11 @@ Four.Mesh.prototype.createSetRow = function (number, spacing) {
   var meshes = [];
 
   var p = self.position;
-  var pSave = self.position;
   spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
 
   function createRow(mesh) {
     p.add(spacing);
     mesh.position.set(p.x, p.y, p.z);
-    // mesh.position.add(spacing)
     scene.add(mesh);
     meshes.push(mesh);
   }
@@ -207,16 +310,30 @@ Four.Mesh.prototype.createSetRow = function (number, spacing) {
   return meshes;
 };
 
-Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
+Four.Mesh.prototype.createSetCircle = function (number, radius) {
   var self = this;
-  var angleSize = Math.PI * 2 / number;
-  var currentAngle = angleSize;
-  var center = self.position.subtract({ x: 0, y: -radius, z: 0 });
+  var scene = Four.arrangements[0].scene;
+  var meshes = [];
 
-  function circle(mesh, p) {
+  var angleSize = Math.PI * 2 / number;
+  var angle = angleSize;
+  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
+
+  function createCircle(mesh, p) {
     var x = center.x + radius * Math.cos(angle);
     var y = center.y + radius * Math.sin(angle);
+
+    mesh.position.setX(x);
+    mesh.position.setY(y);
+    scene.add(mesh);
+    meshes.push(mesh);
+
+    angle += angleSize;
   }
+
+  self.createSet(number, createCircle);
+
+  return meshes;
 };
 
 Four.Mesh.prototype.clone = function () {
@@ -301,115 +418,100 @@ Four.Mesh.TorusKnot = function (preset) {
 Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
 
-var p = {};
-Four.Behavior.behaviors = {
-  flipFlop: function flipFlop(amount, time) {
-    amount.repeat = -1;
-    amount.yoyo = true;
-    amount.delay = 1;
-    var tween = TweenMax.to(this.rotation, time, amount);
-    return tween;
-  },
-  moveTo: function moveTo(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
 
-    target = Four.Behavior.toPoints(target);
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
 
-    var tween = TweenMax.to(this.position, time, target);
-    return tween;
-  },
-  moveBackAndForth: function moveBackAndForth(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
-    //Give time a fallback value
-    time = time || preset.time;
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
 
-    target = Four.Behavior.toPoints(target);
-    target.repeat = 5;
-    target.yoyo = true;
+  Four.Behavior.Apply(camera);
 
-    var tween = TweenMax.to(this.position, time, target);
-
-    return tween;
-  },
-  moveFrom: function moveFrom(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    var tween = TweenMax.from(this.position, time, target);
-    return tween;
-  }
-
+  return camera;
 };
 
-Four.Behavior.toPoints = function (v) {
-  return {
-    x: v.x,
-    y: v.y,
-    z: v.z
-  };
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
+
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').lights;
+
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+  //var color = preset.color;
+
+  var light = new THREE.PointLight();
+
+  light.position.set(positionX, positionY, positionZ);
+
+  return [light];
 };
 
-Four.Behavior.Apply = function (mesh) {
-  var handlers = Four.Behavior.Handler;
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').renderer;
 
-  for (var handler in handlers) {
-    mesh[handler] = handlers[handler];
-    mesh.tweens = [];
-  }
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: antialias
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
 };
 
-Four.Behavior.Handler = {
-  // Creates a new tween based on the based in string, and returns it
-  makeBehavior: function makeBehavior(tweenString) {
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').scene;
 
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 1);
-    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
-    this.tweens.push(tween);
-    return tween;
-  },
+  var scene; // Physics will be set on next line
+  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
 
-  // Adds a tween to this mesh's tweens array
-  addBehavior: function addBehavior(tween) {
-    this.tweens.push(tween);
-    return this;
-  },
-
-  // Creates a new tween and immediately adds it to this mesh's tweens array
-  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
-
-    var tween = this.makeBehavior.apply(this, arguments);
-    this.addBehavior(tween);
-    return this;
-  },
-
-  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-  pipe: function pipe(index) {
-    index = index || 0;
-    var timeline = new TimelineMax();
-
-    timeline.insertMultiple(this.tweens);
-
-    Four.arrangements[index].pipeline.pushTimeline(timeline);
-    this.removeBehaviors();
-    return this;
-  },
-
-  // Removes all tweens from this mesh
-  removeBehaviors: function removeBehaviors() {
-    this.tweens = [];
+  //Set's whether or not the scene has fog
+  if (preset.fog.inScene) {
+    var color = preset.fog.color;
+    var near = preset.fog.near;
+    var far = preset.fog.far;
+    scene.fog = new THREE.Fog(color, near, far);
   }
-
+  return scene;
 };
 
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: false,
+    debugMode: true,
     controls: {
       OrbitControls: true,
       lookAtScene: true,
@@ -584,96 +686,6 @@ Four.Preset.prototype.simplePhysics = function () {
   settings.mesh.sphere.physics = true;
 
   return settings;
-};
-
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  Four.Behavior.Apply(camera);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').lights;
-
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-  //var color = preset.color;
-
-  var light = new THREE.PointLight();
-
-  light.position.set(positionX, positionY, positionZ);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').renderer;
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: antialias
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').scene;
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
-
-  //Set's whether or not the scene has fog
-  if (preset.fog.inScene) {
-    var color = preset.fog.color;
-    var near = preset.fog.near;
-    var far = preset.fog.far;
-    scene.fog = new THREE.Fog(color, near, far);
-  }
-  return scene;
 };
 
 Four.Arrangement.prototype = {

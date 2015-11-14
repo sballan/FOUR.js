@@ -60,13 +60,11 @@ Four.Mesh.prototype.createSetRow = function(number, spacing) {
   var meshes = []
 
   var p = self.position
-  var pSave = self.position
   spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0)
 
   function createRow(mesh) {
     p.add(spacing)
     mesh.position.set(p.x, p.y, p.z)
-    // mesh.position.add(spacing)
     scene.add(mesh)
     meshes.push(mesh)
   }
@@ -76,16 +74,30 @@ Four.Mesh.prototype.createSetRow = function(number, spacing) {
   return meshes
 }
 
-Four.Mesh.prototype.createSetCircle = function(number, radius, cb) {
+Four.Mesh.prototype.createSetCircle = function(number, radius) {
   var self = this;
-  var angleSize = Math.PI * 2 / number
-  var currentAngle = angleSize
-  var center = self.position.subtract({x:0, y: -radius, z:0})
+  var scene = Four.arrangements[0].scene;
+  var meshes = []
 
-  function circle(mesh, p) {
+  var angleSize = Math.PI * 2 / number
+  var angle = angleSize
+  var center = self.position.clone().sub({x: -radius, y: 0, z:0})
+
+  function createCircle(mesh, p) {
     var x = center.x + (radius * Math.cos(angle))
     var y = center.y + (radius * Math.sin(angle))
+
+    mesh.position.setX(x)
+    mesh.position.setY(y)
+    scene.add(mesh)
+    meshes.push(mesh)
+
+    angle += angleSize
   }
+
+  self.createSet(number, createCircle)
+
+  return meshes
 }
 
 
