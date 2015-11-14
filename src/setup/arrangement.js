@@ -19,6 +19,13 @@ Four.Arrangement.prototype = {
     if(preset.controls.lookAtScene) {
       this.camera.lookAt(this.scene.position);
     }
+
+    // Set auto-resize for when the user changes the window's size
+    if(preset.controls.resize) {
+      //Set the proper context
+      var resize = self.resize.bind(self)
+      window.addEventListener("resize", resize);
+    }
     // Turn on debug mode if the preset says to.
     this.debug(preset.debugMode)
 
@@ -71,6 +78,14 @@ Four.Arrangement.prototype = {
   },
   addToScene: function(mesh) {
     this.scene.add(mesh)
+  },
+  resize: function() {
+    var self = this
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    self.camera.aspect = width / height;
+    self.camera.updateProjectionMatrix();
+    self.renderer.setSize(width, height)
   },
   start: function() {
     this.pipeline.start()

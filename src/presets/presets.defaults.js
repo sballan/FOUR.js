@@ -4,7 +4,8 @@ Four.Preset.data = {
     debugMode: true,
     controls: {
       OrbitControls: true,
-      lookAtScene: true
+      lookAtScene: true,
+      resize: true
     },
     renderer: {
       clearColor: 0x999999,
