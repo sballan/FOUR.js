@@ -1,10 +1,12 @@
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: true,
+    debugMode: false,
     controls: {
       OrbitControls: true,
-      lookAtScene: true
+      lookAtScene: true,
+      lookAtSceneContinously: false,
+      resize: true
     },
     renderer: {
       clearColor: 0x999999,
@@ -32,7 +34,13 @@ Four.Preset.data = {
       positionZ: 80
     },
     scene: {
-      physics: false
+      physics: false,
+      fog: {
+        inScene: true,
+        color: 0x222222,
+        near: 50,
+        far: 400
+      }
     },
     mesh: {
       geometry: new THREE.SphereGeometry(5, 16, 16),

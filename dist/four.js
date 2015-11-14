@@ -27,9 +27,9 @@ Four.Mesh = function (preset) {
 
   THREE.Mesh.call(this, geometry, material);
 
-  this.tweens = [];
-  this.physics = false;
-  // this.init()
+  // By adding behaviors this way, we can get the effects of modifying the underlying Object3D object without doing a lot of extra work.
+  Four.Behavior.Apply(this);
+  this.physics = !!preset.physics;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -59,6 +59,8 @@ Four.Preset = function (options) {
   return this[options]();
 };
 
+Four.Behavior = {};
+
 Four.Pipeline = function () {
   this.TweenPipeline = [];
   this.BasicPipeline = [];
@@ -82,14 +84,7 @@ Four.Help = function (arrangement) {
 };
 
 var p = {};
-Four.Behavior = {
-  toPoints: function toPoints(v) {
-    return {
-      x: v.x,
-      y: v.y,
-      z: v.z
-    };
-  },
+Four.Behavior.behaviors = {
   flipFlop: function flipFlop(amount, time) {
     amount.repeat = -1;
     amount.yoyo = true;
@@ -132,45 +127,65 @@ Four.Behavior = {
 
 };
 
-// Creates a new tween based on the based in string, and returns it
-Four.Mesh.prototype.makeBehavior = function (tweenString) {
-
-  var self = this;
-  var args = Array.prototype.slice.call(arguments, 1);
-  var tween = Four.Behavior[tweenString].apply(self, args);
-  this.tweens.push(tween);
-  return tween;
+Four.Behavior.toPoints = function (v) {
+  return {
+    x: v.x,
+    y: v.y,
+    z: v.z
+  };
 };
 
-// Adds a tween to this mesh's tweens array
-Four.Mesh.prototype.addBehavior = function (tween) {
-  this.tweens.push(tween);
-  return this;
+Four.Behavior.Apply = function (mesh) {
+  var handlers = Four.Behavior.Handler;
+
+  for (var handler in handlers) {
+    mesh[handler] = handlers[handler];
+    mesh.tweens = [];
+  }
 };
 
-// Creates a new tween and immediately adds it to this mesh's tweens array
-Four.Mesh.prototype.makeBehaviorAndAdd = function () {
+Four.Behavior.Handler = {
+  // Creates a new tween based on the based in string, and returns it
+  makeBehavior: function makeBehavior(tweenString) {
 
-  var tween = this.makeBehavior.apply(this, arguments);
-  this.addBehavior(tween);
-  return this;
-};
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
+    this.tweens.push(tween);
+    return tween;
+  },
 
-// Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-Four.Mesh.prototype.pipe = function (index) {
-  index = index || 0;
-  var timeline = new TimelineMax();
+  // Adds a tween to this mesh's tweens array
+  addBehavior: function addBehavior(tween) {
+    this.tweens.push(tween);
+    return this;
+  },
 
-  timeline.insertMultiple(this.tweens);
+  // Creates a new tween and immediately adds it to this mesh's tweens array
+  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
 
-  Four.arrangements[index].pipeline.pushTimeline(timeline);
-  this.removeBehaviors();
-  return this;
-};
+    var tween = this.makeBehavior.apply(this, arguments);
+    this.addBehavior(tween);
+    return this;
+  },
 
-// Removes all tweens from this mesh
-Four.Mesh.prototype.removeBehaviors = function () {
-  this.tweens = [];
+  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+  pipe: function pipe(index) {
+    index = index || 0;
+    var timeline = new TimelineMax();
+
+    timeline.insertMultiple(this.tweens);
+
+    Four.arrangements[index].pipeline.pushTimeline(timeline);
+    this.removeBehaviors();
+    return this;
+  },
+
+  // Removes all tweens from this mesh
+  removeBehaviors: function removeBehaviors() {
+    this.tweens = [];
+  }
+
 };
 
 Four.Mesh.Box = function (preset) {
@@ -341,10 +356,12 @@ Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: true,
+    debugMode: false,
     controls: {
       OrbitControls: true,
-      lookAtScene: true
+      lookAtScene: true,
+      lookAtSceneContinously: false,
+      resize: true
     },
     renderer: {
       clearColor: 0x999999,
@@ -370,7 +387,13 @@ Four.Preset.data = {
       positionZ: 80
     },
     scene: {
-      physics: false
+      physics: false,
+      fog: {
+        inScene: true,
+        color: 0x222222,
+        near: 50,
+        far: 400
+      }
     },
     mesh: {
       geometry: new THREE.SphereGeometry(5, 16, 16),
@@ -524,6 +547,8 @@ Four.Setup.prototype.Camera = function (preset) {
   //Sets the camera to any position passed in the options
   camera.position.set(positionX, positionY, positionZ);
 
+  Four.Behavior.Apply(camera);
+
   return camera;
 };
 
@@ -587,6 +612,13 @@ Four.Setup.prototype.Scene = function (preset) {
   var scene; // Physics will be set on next line
   if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
 
+  //Set's whether or not the scene has fog
+  if (preset.fog.inScene) {
+    var color = preset.fog.color;
+    var near = preset.fog.near;
+    var far = preset.fog.far;
+    scene.fog = new THREE.Fog(color, near, far);
+  }
   return scene;
 };
 
@@ -594,6 +626,13 @@ Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function init(preset) {
     var self = this;
+
+    // Add arrangement to the Four object
+    Four.addArrangement(self);
+
+    //Setup a pipeline for this Arrangement
+    this.pipeline = new Four.Pipeline();
+
     var setup = new Four.Setup();
 
     this.scene = setup.Scene(preset.scene);
@@ -602,20 +641,31 @@ Four.Arrangement.prototype = {
     this.lights = setup.Lights(preset.lights);
     this.addToScene(this.lights[0]);
 
-    //Setup a pipeline for this Arrangement
-    this.pipeline = new Four.Pipeline();
-
     this.updates = preset.updates;
 
     // Make camera point at the scene, no matter where it is.
     if (preset.controls.lookAtScene) {
       this.camera.lookAt(this.scene.position);
     }
+
+    // Set auto-resize for when the user changes the window's size
+    if (preset.controls.resize) {
+      //Set the proper context
+      var resize = self.resize.bind(self);
+      window.addEventListener("resize", resize);
+    }
     // Turn on debug mode if the preset says to.
     this.debug(preset.debugMode);
 
     //Bind context to avoid confusion/errors with Orbit Controls
     var update = self.update.bind(self);
+
+    // Make Camera look at scene continuously
+    if (preset.controls.lookAtSceneContinously) {
+      self.updates.push(function () {
+        self.camera.lookAt(self.scene.position);
+      });
+    }
 
     //Sets up Orbit Controls
     if (preset.controls.OrbitControls) {
@@ -634,14 +684,11 @@ Four.Arrangement.prototype = {
     TweenMax.ticker.addEventListener("tick", update);
     //TimelineMax.ticker.addEventListener("tick", update)
     render();
-
-    // Add arrangement to the Four object
-    Four.addArrangement(self);
   },
   // Whatever function is passed in here is called every time the scene updates.
   update: function update() {
-    this.updates.forEach(function (update) {
-      update.func();
+    this.updates.forEach(function (func) {
+      if (typeof func === 'function') func();else func.func();
     });
   },
   debug: function debug(preset) {
@@ -661,6 +708,14 @@ Four.Arrangement.prototype = {
   },
   addToScene: function addToScene(mesh) {
     this.scene.add(mesh);
+  },
+  resize: function resize() {
+    var self = this;
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    self.camera.aspect = width / height;
+    self.camera.updateProjectionMatrix();
+    self.renderer.setSize(width, height);
   },
   start: function start() {
     this.pipeline.start();

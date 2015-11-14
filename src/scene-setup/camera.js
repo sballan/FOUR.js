@@ -13,5 +13,9 @@ Four.Setup.prototype.Camera = function(preset) {
   //Sets the camera to any position passed in the options
   camera.position.set(positionX, positionY, positionZ)
 
+  Four.Behavior.Apply(camera)
+
+
+
   return camera
 }

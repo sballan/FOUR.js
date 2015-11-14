@@ -8,6 +8,7 @@ var helper = new Four.Help()
 
 // Make a new arrangement, or "world" in which to create and control objects
 var arrangement = new Four.Arrangement(preset);
+var camera = arrangement.camera
 
 preset.mesh.box.height = 0.5
 preset.mesh.box.width = 8
@@ -31,9 +32,6 @@ for(var i = 0; i < 16; i++) {
   box.position.z+=10
   box.createSet(16, {x:10, y:0, z: 0}, cb)
 }
-// box.pipe()
-var c = new Four.Mesh.TorusKnot()
-arrangement.addToScene(c)
 
 // Place the new sphere object in the arrangement's scene
 arrangement.addToScene(box)
