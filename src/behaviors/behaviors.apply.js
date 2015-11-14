@@ -3,6 +3,8 @@ Four.Behavior.Apply = function(mesh) {
 
   for(var handler in handlers) {
     mesh[handler] = handlers[handler]
+    mesh.tweens = []
+
   }
 
 }

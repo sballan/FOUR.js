@@ -5,6 +5,7 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
+      lookAtSceneContinously: false,
       resize: true
     },
     renderer: {

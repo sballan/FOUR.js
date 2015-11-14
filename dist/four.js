@@ -27,11 +27,9 @@ Four.Mesh = function (preset) {
 
   THREE.Mesh.call(this, geometry, material);
 
-  this.tweens = [];
-  this.physics = false;
-
   // By adding behaviors this way, we can get the effects of modifying the underlying Object3D object without doing a lot of extra work.
   Four.Behavior.Apply(this);
+  this.physics = !!preset.physics;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -85,11 +83,64 @@ Four.Help = function (arrangement) {
   return response;
 };
 
+var p = {};
+Four.Behavior.behaviors = {
+  flipFlop: function flipFlop(amount, time) {
+    amount.repeat = -1;
+    amount.yoyo = true;
+    amount.delay = 1;
+    var tween = TweenMax.to(this.rotation, time, amount);
+    return tween;
+  },
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveBackAndForth: function moveBackAndForth(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+    target.repeat = 5;
+    target.yoyo = true;
+
+    var tween = TweenMax.to(this.position, time, target);
+
+    return tween;
+  },
+  moveFrom: function moveFrom(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  }
+
+};
+
+Four.Behavior.toPoints = function (v) {
+  return {
+    x: v.x,
+    y: v.y,
+    z: v.z
+  };
+};
+
 Four.Behavior.Apply = function (mesh) {
   var handlers = Four.Behavior.Handler;
 
   for (var handler in handlers) {
     mesh[handler] = handlers[handler];
+    mesh.tweens = [];
   }
 };
 
@@ -133,57 +184,6 @@ Four.Behavior.Handler = {
   // Removes all tweens from this mesh
   removeBehaviors: function removeBehaviors() {
     this.tweens = [];
-  }
-
-};
-
-var p = {};
-Four.Behavior.behaviors = {
-  toPoints: function toPoints(v) {
-    return {
-      x: v.x,
-      y: v.y,
-      z: v.z
-    };
-  },
-  flipFlop: function flipFlop(amount, time) {
-    amount.repeat = -1;
-    amount.yoyo = true;
-    amount.delay = 1;
-    var tween = TweenMax.to(this.rotation, time, amount);
-    return tween;
-  },
-  moveTo: function moveTo(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-
-    var tween = TweenMax.to(this.position, time, target);
-    return tween;
-  },
-  moveBackAndForth: function moveBackAndForth(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-    target.repeat = 5;
-    target.yoyo = true;
-
-    var tween = TweenMax.to(this.position, time, target);
-
-    return tween;
-  },
-  moveFrom: function moveFrom(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    var tween = TweenMax.from(this.position, time, target);
-    return tween;
   }
 
 };
@@ -360,6 +360,7 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
+      lookAtSceneContinously: false,
       resize: true
     },
     renderer: {
@@ -546,6 +547,11 @@ Four.Setup.prototype.Camera = function (preset) {
   //Sets the camera to any position passed in the options
   camera.position.set(positionX, positionY, positionZ);
 
+  Four.Behavior.Apply(camera);
+
+  camera.makeBehaviorAndAdd('moveTo', { x: 40, y: 50, z: 10 }, 5);
+  camera.pipe();
+
   return camera;
 };
 
@@ -623,6 +629,13 @@ Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function init(preset) {
     var self = this;
+
+    // Add arrangement to the Four object
+    Four.addArrangement(self);
+
+    //Setup a pipeline for this Arrangement
+    this.pipeline = new Four.Pipeline();
+
     var setup = new Four.Setup();
 
     this.scene = setup.Scene(preset.scene);
@@ -630,9 +643,6 @@ Four.Arrangement.prototype = {
     this.renderer = setup.Renderer(preset.renderer);
     this.lights = setup.Lights(preset.lights);
     this.addToScene(this.lights[0]);
-
-    //Setup a pipeline for this Arrangement
-    this.pipeline = new Four.Pipeline();
 
     this.updates = preset.updates;
 
@@ -653,6 +663,13 @@ Four.Arrangement.prototype = {
     //Bind context to avoid confusion/errors with Orbit Controls
     var update = self.update.bind(self);
 
+    // Make Camera look at scene continuously
+    if (preset.controls.lookAtSceneContinously) {
+      self.updates.push(function () {
+        self.camera.lookAt(self.scene.position);
+      });
+    }
+
     //Sets up Orbit Controls
     if (preset.controls.OrbitControls) {
       var controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
@@ -670,14 +687,11 @@ Four.Arrangement.prototype = {
     TweenMax.ticker.addEventListener("tick", update);
     //TimelineMax.ticker.addEventListener("tick", update)
     render();
-
-    // Add arrangement to the Four object
-    Four.addArrangement(self);
   },
   // Whatever function is passed in here is called every time the scene updates.
   update: function update() {
-    this.updates.forEach(function (update) {
-      update.func();
+    this.updates.forEach(function (func) {
+      if (typeof func === 'function') func();else func.func();
     });
   },
   debug: function debug(preset) {

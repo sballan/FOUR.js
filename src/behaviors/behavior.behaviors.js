@@ -1,12 +1,5 @@
 var p = {}
 Four.Behavior.behaviors = {
-  toPoints: function(v) {
-    return {
-      x: v.x,
-      y: v.y,
-      z: v.z
-    }
-  },
   flipFlop: function(amount, time) {
     amount.repeat = -1
     amount.yoyo = true
