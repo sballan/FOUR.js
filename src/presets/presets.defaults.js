@@ -69,7 +69,32 @@ Four.Preset.data = {
         geometry: new THREE.BoxGeometry(10, 10, 10),
         materialType: 'MeshPhongMaterial',
         materialOptions: {
-          color: 0x000000,
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      circle: {
+        radius: 5,
+        segments: 32,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      cylinder: {
+        radiusTop: 5,
+        radiusBottom: 5,
+        height: 20,
+        radiusSegments: 32,
+        heightSegments: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
           specular: 0xb4b4b4b4,
           shininess: 2,
           reflectivity: 2

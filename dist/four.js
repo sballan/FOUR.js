@@ -91,7 +91,7 @@ Four.Behavior = {
     };
   },
   flipFlop: function flipFlop(amount, time) {
-    amount.repeat = 40;
+    amount.repeat = -1;
     amount.yoyo = true;
     amount.delay = 1;
     var tween = TweenMax.to(this.rotation, time, amount);
@@ -187,6 +187,37 @@ Four.Mesh.Box = function (preset) {
 // Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Box.constructor = Four.Mesh.Box;
+
+Four.Mesh.Circle = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.circle;
+
+  var radius = preset.radius;
+  var segments = preset.segments;
+
+  preset.geometry = new THREE.CircleGeometry(radius, segments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Circle.constructor = Four.Mesh.Circle;
+
+Four.Mesh.Cylinder = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.cylinder;
+
+  var radiusTop = preset.radiusTop;
+  var radiusBottom = preset.radiusBottom;
+  var height = preset.height;
+  var radiusSegments = preset.radiusSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
+  Four.Mesh.call(this, preset);
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
 
 //Class method to make a new mesh
 Four.Mesh.make = function (string, preset) {
@@ -325,7 +356,32 @@ Four.Preset.data = {
         geometry: new THREE.BoxGeometry(10, 10, 10),
         materialType: 'MeshPhongMaterial',
         materialOptions: {
-          color: 0x000000,
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      circle: {
+        radius: 5,
+        segments: 32,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      cylinder: {
+        radiusTop: 5,
+        radiusBottom: 5,
+        height: 20,
+        radiusSegments: 32,
+        heightSegments: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
           specular: 0xb4b4b4b4,
           shininess: 2,
           reflectivity: 2
