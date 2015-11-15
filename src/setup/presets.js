@@ -8,13 +8,14 @@ Four.Preset.prototype.defaults = function() {
 }
 
 Four.Preset.update = function(preset, defaults) {
-	if(!preset || preset === undefined) {
+	if(!preset) {
 		for(var elem in defaults) preset[elem] = defaults[elem]
 		return;
 	}
 	else {
 		for(var prop in preset) {
 			if (!defaults.hasOwnProperty(prop)) {
+				debugger
 				console.error("Improper Preset object used.")
 			}
 		}
@@ -25,6 +26,7 @@ Four.Preset.update = function(preset, defaults) {
 		if(!preset) return
 		for(var d in defaults) {
 			if(preset.hasOwnProperty(d)) {
+				// We use setTimeout here to avoid overflowing the stack
 				setTimeout(function(){
 					recurse(preset[d], defaults[d])
 				}, 0)

@@ -17,12 +17,11 @@ Four.current = function() {
 
 Four.Setup = function (options) {
 	this.domSelector = "#webGL-container";
-}
+}  
 
 Four.Mesh = function(preset) {
-	if(!preset) preset = {}
-	var defaults = new Four.Preset('defaults').mesh
-	Four.Preset.update(preset, defaults)
+	// FIXME We don't update the preset in the same way here; it was causing errors.  This should be fixed
+	if(!preset) preset = new Four.Preset('defaults').mesh
 
 	var geometry = preset.geometry
 	var material;

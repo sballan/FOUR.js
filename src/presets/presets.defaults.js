@@ -37,7 +37,7 @@ Four.Preset.data = {
       positionZ: 200
     },
     scene: {
-      physics: true,
+      physics: false,
       fog: {
         inScene: true,
         color: 0x222222,
@@ -54,9 +54,9 @@ Four.Preset.data = {
         shininess: 2,
         reflectivity: 2
       },
-      physics: true,
+      physics: false,
       sphere: {
-        physics: true,
+        physics: false,
         x: 0,
         y: 0,
         z: 0,
@@ -85,7 +85,7 @@ Four.Preset.data = {
           shininess: 2,
           reflectivity: 2
         },
-        physics: true
+        physics: false
       },
       circle: {
         radius: 5,

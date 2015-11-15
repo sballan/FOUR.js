@@ -57,7 +57,7 @@ Four.Arrangement.prototype = {
       requestAnimationFrame(render)
       self.renderer.render(self.scene, self.camera);
       update()
-      if(!self.scene.physics) {
+      if(self.scene.physics) {
         self.scene.traverse(function(obj) {
           obj.__dirtyPosition = true;
         })

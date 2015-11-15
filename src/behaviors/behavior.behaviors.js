@@ -1,7 +1,8 @@
 var p = {}
 Four.Behavior.behaviors = {
-  flipFlop: function(amount, time) {
-    amount.repeat = -1
+  flipFlop: function(amount, time, repeat) {
+    repeat = repeat || -1
+    amount.repeat = repeat
     amount.yoyo = true
     amount.delay = 0
     var tween = TweenMax.to(this.rotation, time, amount)
@@ -17,13 +18,13 @@ Four.Behavior.behaviors = {
     var tween = TweenMax.to(this.position, time, target)
     return tween;
   },
-  moveBackAndForth: function(target, time) {
+  moveBackAndForth: function(target, time, repeat) {
     var preset = new Four.Preset('defaults').behaviors.moveBackAndForth
     //Give time a fallback value
     time = time || preset.time;
-
+    repeat = repeat || -1
     target = Four.Behavior.toPoints(target)
-    target.repeat = -1
+    target.repeat = repeat
     target.yoyo = true
 
     var tween = TweenMax.to(this.position, time, target)
@@ -38,6 +39,9 @@ Four.Behavior.behaviors = {
 
     var tween = TweenMax.from(this.position, time, target)
     return tween;
+  },
+  data: function(data, options) {
+
   }
 
 
