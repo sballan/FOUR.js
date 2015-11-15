@@ -22,7 +22,7 @@ Four.Setup = function (options) {
 
 Four.Mesh = function (preset) {
   if (!preset) preset = {};
-  defaults = new Four.Preset('defaults').mesh;
+  var defaults = new Four.Preset('defaults').mesh;
   Four.Preset.update(preset, defaults);
 
   var geometry = preset.geometry;
@@ -320,6 +320,7 @@ Four.Mesh.prototype.createSet = function (number, cb) {
 // createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
 Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
   var self = this;
+  var save = self.position;
   var scene = Four.current().scene;
   var group = new Four.Object3D();
   group.add(self);
@@ -339,6 +340,7 @@ Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
 
   scene.add(group);
 
+  self.position.set(save.x, save.y, save.z);
   return group;
 };
 
@@ -477,110 +479,6 @@ Four.Mesh.TorusKnot = function (preset) {
 Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
 
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = {};
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var defaults = new Four.Preset('defaults').camera;
-
-  Four.Preset.update(preset, defaults);
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  Four.Behavior.Apply(camera);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').lights;
-  Four.Preset.update(preset, defaults);
-
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-  //var color = preset.color;
-
-  var light = new THREE.PointLight();
-  Four.Behavior.Apply(light);
-
-  light.position.set(positionX, positionY, positionZ);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').renderer;
-  Four.Preset.update(preset, defaults);
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: antialias
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').scene;
-  Four.Preset.update(preset, defaults);
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) {
-    scene = new Physijs.Scene();
-    scene.physics = true;
-  } else scene = new THREE.Scene(preset);
-
-  //Set's whether or not the scene has fog
-  if (preset.fog.inScene) {
-    var color = preset.fog.color;
-    var near = preset.fog.near;
-    var far = preset.fog.far;
-    scene.fog = new THREE.Fog(color, near, far);
-  }
-  return scene;
-};
-
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
@@ -588,7 +486,7 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: false,
+      lookAtSceneContinously: true,
       resize: true,
       mouse: false
     },
@@ -601,9 +499,11 @@ Four.Preset.data = {
     updates: [{ func: function func() {}
     }],
     lights: {
-      positionX: 50,
-      positionY: 20,
-      positionZ: 50,
+      position: {
+        x: 50,
+        y: 20,
+        z: 50
+      },
       color: 0xFFFFFF
     },
     camera: {
@@ -707,11 +607,11 @@ Four.Preset.data = {
         }
       },
       torus: {
-        radius: 10,
-        tube: 3,
-        radialSegments: 16,
-        tubularSegments: 50,
-        arc: Math.PI * 2,
+        radius: 3,
+        tube: 1,
+        radialSegments: 3,
+        tubularSegments: 10,
+        arc: Math.PI * 8,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,
@@ -760,6 +660,110 @@ Four.Preset.prototype.simplePhysics = function () {
   settings.mesh.sphere.physics = true;
 
   return settings;
+};
+
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = {};
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var defaults = new Four.Preset('defaults').camera;
+
+  Four.Preset.update(preset, defaults);
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
+
+  Four.Behavior.Apply(camera);
+
+  return camera;
+};
+
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
+
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').lights;
+  Four.Preset.update(preset, defaults);
+
+  var x = preset.position.x;
+  var y = preset.position.y;
+  var z = preset.position.z;
+  //var color = preset.color;
+
+  var light = new THREE.PointLight();
+  Four.Behavior.Apply(light);
+
+  light.position.set(x, y, z);
+
+  return [light];
+};
+
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').renderer;
+  Four.Preset.update(preset, defaults);
+
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: antialias
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
+};
+
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').scene;
+  Four.Preset.update(preset, defaults);
+
+  var scene; // Physics will be set on next line
+  if (preset.physics) {
+    scene = new Physijs.Scene();
+    scene.physics = true;
+  } else scene = new THREE.Scene(preset);
+
+  //Set's whether or not the scene has fog
+  if (preset.fog.inScene) {
+    var color = preset.fog.color;
+    var near = preset.fog.near;
+    var far = preset.fog.far;
+    scene.fog = new THREE.Fog(color, near, far);
+  }
+  return scene;
 };
 
 Four.Arrangement.prototype = {
@@ -835,8 +839,7 @@ Four.Arrangement.prototype = {
   update: function update() {
     var self = this;
     self.updates.forEach(function (func) {
-      // if(typeof func ==='function') func()
-      // else func.func()
+      if (typeof func === 'function') func();else func.func();
 
       if (self.scene.physics) {
         self.scene.traverse(function (obj) {

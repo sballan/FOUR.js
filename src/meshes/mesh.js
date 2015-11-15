@@ -26,6 +26,7 @@ Four.Mesh.prototype.createSet = function(number, cb) {
 // createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
 Four.Mesh.prototype.createSetRow = function(number, spacing, cb) {
   var self = this;
+  var save = self.position
   var scene = Four.current().scene;
   var group = new Four.Object3D()
   group.add(self)
@@ -45,6 +46,7 @@ Four.Mesh.prototype.createSetRow = function(number, spacing, cb) {
 
   scene.add(group)
 
+  self.position.set(save.x, save.y, save.z)
   return group
 }
 

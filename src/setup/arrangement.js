@@ -77,8 +77,8 @@ Four.Arrangement.prototype = {
   update: function() {
     var self = this
     self.updates.forEach(function(func) {
-      // if(typeof func ==='function') func()
-      // else func.func()
+      if(typeof func ==='function') func()
+      else func.func()
 
       if(self.scene.physics) {
         self.scene.traverse(function(obj) {

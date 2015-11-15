@@ -5,7 +5,7 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: false,
+      lookAtSceneContinously: true,
       resize: true,
       mouse: false
     },
@@ -20,9 +20,11 @@ Four.Preset.data = {
       }
     ],
     lights: {
-      positionX: 50,
-      positionY: 20,
-      positionZ: 50,
+      position: {
+        x: 50,
+        y: 20,
+        z: 50
+      },
       color: 0xFFFFFF
     },
     camera: {
@@ -126,11 +128,11 @@ Four.Preset.data = {
         }
       },
       torus: {
-        radius: 10,
-        tube: 3,
-        radialSegments: 16,
-        tubularSegments: 50,
-        arc: Math.PI * 2,
+        radius: 3,
+        tube: 1,
+        radialSegments: 3,
+        tubularSegments: 10,
+        arc: Math.PI * 8,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,

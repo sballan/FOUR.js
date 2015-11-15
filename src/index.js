@@ -21,7 +21,7 @@ Four.Setup = function (options) {
 
 Four.Mesh = function(preset) {
 	if(!preset) preset = {}
-	defaults = new Four.Preset('defaults').mesh
+	var defaults = new Four.Preset('defaults').mesh
 	Four.Preset.update(preset, defaults)
 
 	var geometry = preset.geometry
