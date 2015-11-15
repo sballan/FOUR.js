@@ -67,9 +67,18 @@ Four.Arrangement.prototype = {
   },
   // Whatever function is passed in here is called every time the scene updates.
   update: function() {
-    this.updates.forEach(function(func) {
+    var self = this
+    self.updates.forEach(function(func) {
       if(typeof func ==='function') func()
       else func.func()
+
+      if(self.scene.physics) {
+        self.scene.traverse(function(obj) {
+          obj.__dirtyPosition = true;
+        })
+        self.scene.simulate()
+
+      }
     })
 
   },
