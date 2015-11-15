@@ -1,7 +1,7 @@
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: true,
+    debugMode: false,
     controls: {
       OrbitControls: true,
       lookAtScene: true,
@@ -10,7 +10,7 @@ Four.Preset.data = {
       mouse: false
     },
     renderer: {
-      clearColor: 0x999999,
+      clearColor: 0x111111,
       shadowMap: true,
       shadowMapSoft: true,
       antialias: true

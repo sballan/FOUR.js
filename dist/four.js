@@ -99,6 +99,294 @@ Four.Help = function (arrangement) {
   return response;
 };
 
+var p = {};
+Four.Behavior.behaviors = {
+  flipFlop: function flipFlop(amount, time) {
+    amount.repeat = -1;
+    amount.yoyo = true;
+    amount.delay = 0;
+    var tween = TweenMax.to(this.rotation, time, amount);
+    return tween;
+  },
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveBackAndForth: function moveBackAndForth(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+    target.repeat = -1;
+    target.yoyo = true;
+
+    var tween = TweenMax.to(this.position, time, target);
+
+    return tween;
+  },
+  moveFrom: function moveFrom(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  }
+
+};
+
+Four.Behavior.toPoints = function (v) {
+  return {
+    x: v.x,
+    y: v.y,
+    z: v.z
+  };
+};
+
+Four.Behavior.Apply = function (mesh) {
+  var handlers = Four.Behavior.Handler;
+
+  for (var handler in handlers) {
+    mesh[handler] = handlers[handler];
+    mesh.tweens = [];
+  }
+};
+
+Four.Behavior.Handler = {
+  // Creates a new tween based on the based in string, and returns it
+  makeBehavior: function makeBehavior(tweenString) {
+
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
+    this.tweens.push(tween);
+    return tween;
+  },
+
+  // Adds a tween to this mesh's tweens array
+  addBehavior: function addBehavior(tween) {
+    this.tweens.push(tween);
+    return this;
+  },
+
+  // Creates a new tween and immediately adds it to this mesh's tweens array
+  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
+
+    var tween = this.makeBehavior.apply(this, arguments);
+    this.addBehavior(tween);
+    return this;
+  },
+
+  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+  pipe: function pipe(index) {
+    index = index || 0;
+    var timeline = new TimelineMax();
+
+    this.tweens.forEach(function (tween) {
+      timeline.add(tween);
+    });
+    //timeline.insertMultiple(this.tweens)
+
+    Four.current().pipeline.pushTimeline(timeline);
+    this.removeBehaviors();
+    return this;
+  },
+
+  // Removes all tweens from this mesh
+  removeBehaviors: function removeBehaviors() {
+    this.tweens = [];
+  }
+
+};
+
+Four.Preset.data = {
+  currentDefaults: {},
+  defaults: {
+    debugMode: false,
+    controls: {
+      OrbitControls: true,
+      lookAtScene: true,
+      lookAtSceneContinously: true,
+      resize: true,
+      mouse: false
+    },
+    renderer: {
+      clearColor: 0x111111,
+      shadowMap: true,
+      shadowMapSoft: true,
+      antialias: true
+    },
+    updates: [{ func: function func() {}
+    }],
+    lights: {
+      positionX: 50,
+      positionY: 20,
+      positionZ: 50,
+      color: 0xFFFFFF
+    },
+    camera: {
+      angle: 45,
+      aspect: window.innerWidth / window.innerHeight,
+      near: 0.1,
+      far: 500,
+      positionX: 20,
+      positionY: 0,
+      positionZ: 200
+    },
+    scene: {
+      physics: false,
+      fog: {
+        inScene: true,
+        color: 0x222222,
+        near: 50,
+        far: 400
+      }
+    },
+    mesh: {
+      geometry: new THREE.SphereGeometry(5, 16, 16),
+      materialType: 'MeshPhongMaterial',
+      materialOptions: {
+        color: 0x556677,
+        specular: 0xb4b4b4b4,
+        shininess: 2,
+        reflectivity: 2
+      },
+      physics: false,
+      sphere: {
+        physics: false,
+        x: 0,
+        y: 0,
+        z: 0,
+        radius: 5,
+        widthSegments: 16,
+        heightSegments: 16,
+        geometry: new THREE.SphereGeometry(5, 16, 16),
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0xb4b4b4b4,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+
+      },
+      box: {
+        height: 5,
+        width: 5,
+        depth: 5,
+        geometry: new THREE.BoxGeometry(10, 10, 10),
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      circle: {
+        radius: 5,
+        segments: 32,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      cylinder: {
+        radiusTop: 5,
+        radiusBottom: 5,
+        height: 20,
+        radiusSegments: 32,
+        heightSegments: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      ring: {
+        innerRadius: 3,
+        outerRadius: 5,
+        thetaSegments: 32,
+        phiSegments: 8,
+        thetaStart: 0,
+        thetaLength: Math.PI * 2,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      torus: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 16,
+        tubularSegments: 50,
+        arc: Math.PI * 2,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      torusKnot: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 30,
+        tubularSegments: 50,
+        p: 2,
+        q: 3,
+        heightScale: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      }
+    },
+    behaviors: {
+      moveTo: {
+        time: 2
+      },
+      moveFrom: {
+        target: { x: -4, y: -5, z: 3 },
+        time: 2
+      },
+      moveBackAndForth: {
+        time: 2
+      }
+    }
+  }
+
+};
+
+Four.Preset.prototype.simplePhysics = function () {
+  var settings = new Four.Preset('defaults');
+
+  settings.scene.physics = true;
+  settings.mesh.sphere.physics = true;
+
+  return settings;
+};
+
 Four.Mesh.Box = function (preset) {
   preset = preset || new Four.Preset('defaults').mesh.box;
 
@@ -310,294 +598,6 @@ Four.Mesh.TorusKnot = function (preset) {
 Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
 
-Four.Preset.data = {
-  currentDefaults: {},
-  defaults: {
-    debugMode: true,
-    controls: {
-      OrbitControls: true,
-      lookAtScene: true,
-      lookAtSceneContinously: true,
-      resize: true,
-      mouse: false
-    },
-    renderer: {
-      clearColor: 0x999999,
-      shadowMap: true,
-      shadowMapSoft: true,
-      antialias: true
-    },
-    updates: [{ func: function func() {}
-    }],
-    lights: {
-      positionX: 50,
-      positionY: 20,
-      positionZ: 50,
-      color: 0xFFFFFF
-    },
-    camera: {
-      angle: 45,
-      aspect: window.innerWidth / window.innerHeight,
-      near: 0.1,
-      far: 500,
-      positionX: 20,
-      positionY: 0,
-      positionZ: 200
-    },
-    scene: {
-      physics: false,
-      fog: {
-        inScene: true,
-        color: 0x222222,
-        near: 50,
-        far: 400
-      }
-    },
-    mesh: {
-      geometry: new THREE.SphereGeometry(5, 16, 16),
-      materialType: 'MeshPhongMaterial',
-      materialOptions: {
-        color: 0x556677,
-        specular: 0xb4b4b4b4,
-        shininess: 2,
-        reflectivity: 2
-      },
-      physics: false,
-      sphere: {
-        physics: false,
-        x: 0,
-        y: 0,
-        z: 0,
-        radius: 5,
-        widthSegments: 16,
-        heightSegments: 16,
-        geometry: new THREE.SphereGeometry(5, 16, 16),
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0xb4b4b4b4,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-
-      },
-      box: {
-        height: 5,
-        width: 5,
-        depth: 5,
-        geometry: new THREE.BoxGeometry(10, 10, 10),
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      circle: {
-        radius: 5,
-        segments: 32,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      cylinder: {
-        radiusTop: 5,
-        radiusBottom: 5,
-        height: 20,
-        radiusSegments: 32,
-        heightSegments: 1,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      ring: {
-        innerRadius: 3,
-        outerRadius: 5,
-        thetaSegments: 32,
-        phiSegments: 8,
-        thetaStart: 0,
-        thetaLength: Math.PI * 2,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      torus: {
-        radius: 10,
-        tube: 3,
-        radialSegments: 16,
-        tubularSegments: 50,
-        arc: Math.PI * 2,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      torusKnot: {
-        radius: 10,
-        tube: 3,
-        radialSegments: 30,
-        tubularSegments: 50,
-        p: 2,
-        q: 3,
-        heightScale: 1,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      }
-    },
-    behaviors: {
-      moveTo: {
-        time: 2
-      },
-      moveFrom: {
-        target: { x: -4, y: -5, z: 3 },
-        time: 2
-      },
-      moveBackAndForth: {
-        time: 2
-      }
-    }
-  }
-
-};
-
-Four.Preset.prototype.simplePhysics = function () {
-  var settings = new Four.Preset('defaults');
-
-  settings.scene.physics = true;
-  settings.mesh.sphere.physics = true;
-
-  return settings;
-};
-
-var p = {};
-Four.Behavior.behaviors = {
-  flipFlop: function flipFlop(amount, time) {
-    amount.repeat = -1;
-    amount.yoyo = true;
-    amount.delay = 0;
-    var tween = TweenMax.to(this.rotation, time, amount);
-    return tween;
-  },
-  moveTo: function moveTo(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-
-    var tween = TweenMax.to(this.position, time, target);
-    return tween;
-  },
-  moveBackAndForth: function moveBackAndForth(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-    target.repeat = -1;
-    target.yoyo = true;
-
-    var tween = TweenMax.to(this.position, time, target);
-
-    return tween;
-  },
-  moveFrom: function moveFrom(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    var tween = TweenMax.from(this.position, time, target);
-    return tween;
-  }
-
-};
-
-Four.Behavior.toPoints = function (v) {
-  return {
-    x: v.x,
-    y: v.y,
-    z: v.z
-  };
-};
-
-Four.Behavior.Apply = function (mesh) {
-  var handlers = Four.Behavior.Handler;
-
-  for (var handler in handlers) {
-    mesh[handler] = handlers[handler];
-    mesh.tweens = [];
-  }
-};
-
-Four.Behavior.Handler = {
-  // Creates a new tween based on the based in string, and returns it
-  makeBehavior: function makeBehavior(tweenString) {
-
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 1);
-    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
-    this.tweens.push(tween);
-    return tween;
-  },
-
-  // Adds a tween to this mesh's tweens array
-  addBehavior: function addBehavior(tween) {
-    this.tweens.push(tween);
-    return this;
-  },
-
-  // Creates a new tween and immediately adds it to this mesh's tweens array
-  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
-
-    var tween = this.makeBehavior.apply(this, arguments);
-    this.addBehavior(tween);
-    return this;
-  },
-
-  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-  pipe: function pipe(index) {
-    index = index || 0;
-    var timeline = new TimelineMax();
-
-    this.tweens.forEach(function (tween) {
-      timeline.add(tween);
-    });
-    //timeline.insertMultiple(this.tweens)
-
-    Four.current().pipeline.pushTimeline(timeline);
-    this.removeBehaviors();
-    return this;
-  },
-
-  // Removes all tweens from this mesh
-  removeBehaviors: function removeBehaviors() {
-    this.tweens = [];
-  }
-
-};
-
 Four.Setup.prototype.Camera = function (preset) {
   if (!preset) preset = new Four.Preset('defaults').camera;
   var angle = preset.angle;
@@ -644,6 +644,7 @@ Four.Setup.prototype.Lights = function (preset) {
   //var color = preset.color;
 
   var light = new THREE.PointLight();
+  Four.Behavior.Apply(light);
 
   light.position.set(positionX, positionY, positionZ);
 

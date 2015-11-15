@@ -1,14 +1,11 @@
 // Make a new Preset,
 var preset = new Four.Preset()
-preset.scene.physics = true;
-preset.mesh.sphere.physics = true;
 
-// Make a new helper object, which can be queried from the browser console.  This is useful during debugging.
-var helper = new Four.Help()
-
-// Make a new arrangement, or "world" in which to create and control objects
 var arrangement = new Four.Arrangement(preset);
 var camera = arrangement.camera
+var light = arrangement.lights[0]
+
+light.makeBehaviorAndAdd('moveBackAndForth', {x:50, y:-30, z: -80}, 3)
 
 var box = new Four.Mesh.Box()
 box.position.x -= 70
@@ -27,7 +24,6 @@ var group = box.createSetCircle(20, 30, function(mesh) {
   mesh.pipe()
 })
 
-console.log(group)
 group.makeBehaviorAndAdd('moveTo', {x:10, y:10, z: 10})
 group.pipe()
 
