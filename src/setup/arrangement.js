@@ -121,6 +121,11 @@ Four.Arrangement.prototype = {
   },
   start: function() {
     this.pipeline.start()
+  },
+  addListener: function(event, func, context) {
+    if(!context) context = this
+
+    window.addEventListener(event, func)
   }
 
 

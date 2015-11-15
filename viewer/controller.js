@@ -39,7 +39,17 @@ var p = [
 // b1.makeBehaviorAndAdd('flipFlop', {y:2}, 2)
 // b1.pipe()
 
-b1.makePositionFromData(p)
+window.addEventListener('mousemove', function(e) {
+  var data = {
+    x: e.clientX / 10,
+    y: e.clientY / 10,
+    z: 0
+  }
+b1.makePositionContinously(data)
+})
+
+// b1.makePositionFromData(p)
+
 
 
 // Place the new sphere object in the arrangement's scene
