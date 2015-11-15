@@ -1,6 +1,8 @@
 //Class method to make a new mesh
 Four.Mesh.make = function(string, preset) {
-  if(!preset) preset = new Four.Preset('defaults').mesh;
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh
+	Four.Preset.update(preset, defaults)
 
   // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
   var makeNewMesh = Four.Mesh[string];
@@ -24,6 +26,7 @@ Four.Mesh.prototype.createSet = function(number, cb) {
 // createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
 Four.Mesh.prototype.createSetRow = function(number, spacing, cb) {
   var self = this;
+  var save = self.position
   var scene = Four.current().scene;
   var group = new Four.Object3D()
   group.add(self)
@@ -43,6 +46,7 @@ Four.Mesh.prototype.createSetRow = function(number, spacing, cb) {
 
   scene.add(group)
 
+  self.position.set(save.x, save.y, save.z)
   return group
 }
 

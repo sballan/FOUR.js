@@ -17,10 +17,11 @@ Four.current = function() {
 
 Four.Setup = function (options) {
 	this.domSelector = "#webGL-container";
-}
+}  
 
 Four.Mesh = function(preset) {
-	preset = preset || new Four.Preset('defaults').mesh
+	// FIXME We don't update the preset in the same way here; it was causing errors.  This should be fixed
+	if(!preset) preset = new Four.Preset('defaults').mesh
 
 	var geometry = preset.geometry
 	var material;
@@ -57,7 +58,10 @@ Four.Object3D.prototype = Object.create(THREE.Object3D.prototype)
 Four.Object3D.constructor = Four.Object3D
 
 Four.Arrangement = function(preset) {
-	if(!preset) preset = new Four.Preset('defaults')
+	if(!preset) preset = {}
+	var defaults = new Four.Preset('defaults')
+	Four.Preset.update(preset, defaults)
+
 	this.debugMode = true;
 
 	this.scene = null;

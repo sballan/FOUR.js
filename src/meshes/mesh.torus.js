@@ -1,5 +1,7 @@
 Four.Mesh.Torus = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torus
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.torus
+	Four.Preset.update(preset, defaults)
 
   var radius = preset.radius
   var tube = preset.tube
@@ -10,8 +12,8 @@ Four.Mesh.Torus = function(preset) {
   preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc)
   Four.Mesh.call(this, preset)
 
-  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype)
-  Four.Mesh.Circle.constructor = Four.Mesh.Torus
+  Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype)
+  Four.Mesh.Torus.prototype.constructor = Four.Mesh.Torus
 }
 
 // Setup the prototype and constructor for purposes of inheritance

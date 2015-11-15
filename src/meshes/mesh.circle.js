@@ -1,5 +1,7 @@
 Four.Mesh.Circle = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.circle
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.circle
+	Four.Preset.update(preset, defaults)
 
   var radius = preset.radius
   var segments = preset.segments

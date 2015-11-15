@@ -5,39 +5,45 @@ var arrangement = new Four.Arrangement(preset);
 var camera = arrangement.camera
 var light = arrangement.lights[0]
 
-light.makeBehaviorAndAdd('moveBackAndForth', {x:50, y:-30, z: -80}, 2)
+var setup = new Four.Setup()
 
-var box = new Four.Mesh.Box()
-box.position.x -= 70
-arrangement.addToScene(box)
+var b1 = new Four.Mesh.Box()
+arrangement.addToScene(b1)
 
-var counter = -50
+var counter = 1
+var p = [
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+  {x:counter += 4, y:2, z: 5},
+]
 
-var d = new Four.Mesh.Box()
-arrangement.addToScene(d)
+// b1.makeBehaviorAndAdd('moveBackAndForth', {x: -100, y:0, z: 0}, 3, 2).pipe()
+// b1.makeBehaviorAndAdd('flipFlop', {y:2}, 2)
+// b1.pipe()
 
-var group = box.createSetCircle(20, 30, function(mesh) {
-  // mesh.material = Four.Preset.makeMaterial()
-  //
-  // mesh.makeBehaviorAndAdd('flipFlop', {x:5}, 1)
-  // mesh.pipe()
-  //
-  // mesh.makeBehaviorAndAdd('moveBackAndForth', {x:counter+=5, y:5, z: 30}, 2)
-  //
-  // mesh.pipe()
-})
+b1.makePositionFromData(p)
 
-// group.makeBehaviorAndAdd('moveTo', {x:10, y:10, z: 10})
-// group.pipe()
-
-// camera.makeBehaviorAndAdd('moveBackAndForth', {x: 40, y:20, z:-100}, 3)
 
 // Place the new sphere object in the arrangement's scene
 arrangement.start()
-
-
-
-
 
 
 

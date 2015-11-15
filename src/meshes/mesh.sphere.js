@@ -1,5 +1,7 @@
 Four.Mesh.Sphere = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.sphere
+	Four.Preset.update(preset, defaults)
 
   var radius = preset.radius
   var widthSegments = preset.widthSegments
