@@ -31,9 +31,19 @@ Four.Mesh = function(preset) {
 	this.physics = !!preset.physics
 }
 
+
+
 // Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.prototype = Object.create(THREE.Mesh.prototype)
 Four.Mesh.constructor = Four.Mesh
+
+Four.Object3D = function() {
+	THREE.Object3D.call(this)
+	Four.Behavior.Apply(this)
+}
+
+Four.Object3D.prototype = Object.create(THREE.Object3D.prototype)
+Four.Object3D.constructor = Four.Object3D
 
 Four.Arrangement = function(preset) {
 	if(!preset) preset = new Four.Preset('defaults')

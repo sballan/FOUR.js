@@ -36,6 +36,14 @@ Four.Mesh = function (preset) {
 Four.Mesh.prototype = Object.create(THREE.Mesh.prototype);
 Four.Mesh.constructor = Four.Mesh;
 
+Four.Object3D = function () {
+  THREE.Object3D.call(this);
+  Four.Behavior.Apply(this);
+};
+
+Four.Object3D.prototype = Object.create(THREE.Object3D.prototype);
+Four.Object3D.constructor = Four.Object3D;
+
 Four.Arrangement = function (preset) {
   if (!preset) preset = new Four.Preset('defaults');
   this.debugMode = true;
@@ -88,7 +96,7 @@ Four.Behavior.behaviors = {
   flipFlop: function flipFlop(amount, time) {
     amount.repeat = -1;
     amount.yoyo = true;
-    amount.delay = 1;
+    amount.delay = 0;
     var tween = TweenMax.to(this.rotation, time, amount);
     return tween;
   },
@@ -108,7 +116,7 @@ Four.Behavior.behaviors = {
     time = time || preset.time;
 
     target = Four.Behavior.toPoints(target);
-    target.repeat = 5;
+    target.repeat = -1;
     target.yoyo = true;
 
     var tween = TweenMax.to(this.position, time, target);
@@ -174,7 +182,10 @@ Four.Behavior.Handler = {
     index = index || 0;
     var timeline = new TimelineMax();
 
-    timeline.insertMultiple(this.tweens);
+    this.tweens.forEach(function (tween) {
+      timeline.add(tween);
+    });
+    //timeline.insertMultiple(this.tweens)
 
     Four.arrangements[index].pipeline.pushTimeline(timeline);
     this.removeBehaviors();
@@ -247,34 +258,80 @@ Four.Mesh.make = function (string, preset) {
   return new makeNewMesh(type);
 };
 
-// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSet = function (number, spacing, cb) {
+// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
+Four.Mesh.prototype.createSet = function (number, cb) {
   var self = this;
-  var scene = Four.arrangements[0].scene;
-  var meshes = [];
-
-  var p = self.position;
-  var pSave = self.position;
-  spacing = new THREE.Vector3(spacing.x, spacing.y, spacing.z);
 
   for (var i = 0; i < number; i++) {
-    var mesh = this.clone();
-    mesh.position.set(p.x, p.y, p.z);
-    mesh.position.add(spacing);
-    scene.add(mesh);
-    meshes.push(mesh);
-    p.add(spacing);
-
-    if (cb) cb(mesh);
+    var mesh = self.clone();
+    cb(mesh);
   }
-  self.position.set(pSave.x, pSave.y, pSave.z);
-  return meshes;
+};
+
+// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
+  var self = this;
+  var scene = Four.arrangements[0].scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var p = self.position;
+  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
+
+  function createRow(mesh) {
+    p.add(spacing);
+    mesh.position.set(p.x, p.y, p.z);
+    group.add(mesh);
+    //mesh.material.color.setHex(Four.Preset.randomColor())
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createRow);
+
+  scene.add(group);
+
+  return group;
+};
+
+// Be aware that this function will hide the original object
+Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
+  var self = this;
+  self.visible = false;
+  var scene = Four.arrangements[0].scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var angleSize = Math.PI * 2 / number;
+  var angle = angleSize;
+  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
+
+  function createCircle(mesh, p) {
+    var x = center.x + radius * Math.cos(angle);
+    var y = center.y + radius * Math.sin(angle);
+
+    mesh.position.setX(x);
+    mesh.position.setY(y);
+    group.add(mesh);
+
+    angle += angleSize;
+
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createCircle);
+
+  scene.add(group);
+
+  return group;
 };
 
 Four.Mesh.prototype.clone = function () {
+  var self = this;
   var preset = new Four.Preset('defaults').mesh;
-  preset.geometry = this.geometry;
-  preset.material = this.material;
+  preset.geometry = self.geometry;
+  preset.material = self.material;
+
+  console.log(self.constructor);
 
   return new Four.Mesh.constructor(preset);
 };
@@ -356,12 +413,13 @@ Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: false,
+    debugMode: true,
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: false,
-      resize: true
+      lookAtSceneContinously: true,
+      resize: true,
+      mouse: false
     },
     renderer: {
       clearColor: 0x999999,
@@ -382,9 +440,9 @@ Four.Preset.data = {
       aspect: window.innerWidth / window.innerHeight,
       near: 0.1,
       far: 500,
-      positionX: 0,
-      positionY: 60,
-      positionZ: 80
+      positionX: 20,
+      positionY: 0,
+      positionZ: 200
     },
     scene: {
       physics: false,
