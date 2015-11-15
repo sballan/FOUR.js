@@ -85,8 +85,6 @@ Four.Mesh.prototype.clone = function() {
   preset.geometry = self.geometry
   preset.material = self.material
 
-  console.log(self.constructor)
-
   return new self.constructor()
 }
 

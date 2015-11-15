@@ -6,10 +6,19 @@ Four.Mesh.Box = function(preset) {
   var depth = preset.depth
 
   preset.geometry = new THREE.BoxGeometry(width, height, depth)
-  Four.Mesh.call(this, preset)
 
-  this.prototype = Object.create(Four.Mesh.prototype)
-  this.constructor = Four.Mesh.Box
+  if(preset.physics) {
+    var materialType = preset.materialType
+    var materialOptions = preset.materialOptions
+    preset.material = new THREE[materialType](materialOptions)
+    Physijs.BoxMesh.call(this, preset.geometry, preset.material)
+    Four.Behavior.Apply(this)
+  }else {
+    Four.Mesh.call(this, preset)
+    this.prototype = Object.create(Four.Mesh.prototype)
+    this.constructor = Four.Mesh.Box
+  }
+
 
 }
 
