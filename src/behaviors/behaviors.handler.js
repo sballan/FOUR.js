@@ -33,7 +33,7 @@ Four.Behavior.Handler = {
     })
     //timeline.insertMultiple(this.tweens)
 
-    Four.arrangements[index].pipeline.pushTimeline(timeline)
+    Four.current().pipeline.pushTimeline(timeline)
     this.removeBehaviors()
     return this;
   },

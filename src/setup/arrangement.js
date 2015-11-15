@@ -3,8 +3,8 @@ Four.Arrangement.prototype = {
   init: function(preset) {
     var self = this
 
-    // Add arrangement to the Four object
-    Four.addArrangement(self)
+    // Add arrangement to the Four object, and set it to the default
+    Four.addArrangement(self, true)
 
     //Setup a pipeline for this Arrangement
     this.pipeline = new Four.Pipeline();
@@ -72,6 +72,9 @@ Four.Arrangement.prototype = {
       else func.func()
     })
 
+  },
+  addToUpdate: function(func) {
+    this.updates.push(func)
   },
   debug: function(preset) {
     if(preset === undefined) {

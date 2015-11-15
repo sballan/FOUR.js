@@ -2,8 +2,16 @@ var Four = {};
 
 Four.arrangements = []
 
-Four.addArrangement = function(arrangement) {
+Four.addArrangement = function(arrangement, setDefault) {
+	if(setDefault) this.currentArrangement = arrangement
+
 	this.arrangements.push(arrangement)
+}
+
+Four.currentArrangement = {}
+
+Four.current = function() {
+	return this.currentArrangement
 }
 
 

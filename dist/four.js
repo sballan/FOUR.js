@@ -4,8 +4,16 @@ var Four = {};
 
 Four.arrangements = [];
 
-Four.addArrangement = function (arrangement) {
+Four.addArrangement = function (arrangement, setDefault) {
+  if (setDefault) this.currentArrangement = arrangement;
+
   this.arrangements.push(arrangement);
+};
+
+Four.currentArrangement = {};
+
+Four.current = function () {
+  return this.currentArrangement;
 };
 
 Four.Setup = function (options) {
@@ -91,114 +99,6 @@ Four.Help = function (arrangement) {
   return response;
 };
 
-var p = {};
-Four.Behavior.behaviors = {
-  flipFlop: function flipFlop(amount, time) {
-    amount.repeat = -1;
-    amount.yoyo = true;
-    amount.delay = 0;
-    var tween = TweenMax.to(this.rotation, time, amount);
-    return tween;
-  },
-  moveTo: function moveTo(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-
-    var tween = TweenMax.to(this.position, time, target);
-    return tween;
-  },
-  moveBackAndForth: function moveBackAndForth(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-    target.repeat = -1;
-    target.yoyo = true;
-
-    var tween = TweenMax.to(this.position, time, target);
-
-    return tween;
-  },
-  moveFrom: function moveFrom(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    var tween = TweenMax.from(this.position, time, target);
-    return tween;
-  }
-
-};
-
-Four.Behavior.toPoints = function (v) {
-  return {
-    x: v.x,
-    y: v.y,
-    z: v.z
-  };
-};
-
-Four.Behavior.Apply = function (mesh) {
-  var handlers = Four.Behavior.Handler;
-
-  for (var handler in handlers) {
-    mesh[handler] = handlers[handler];
-    mesh.tweens = [];
-  }
-};
-
-Four.Behavior.Handler = {
-  // Creates a new tween based on the based in string, and returns it
-  makeBehavior: function makeBehavior(tweenString) {
-
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 1);
-    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
-    this.tweens.push(tween);
-    return tween;
-  },
-
-  // Adds a tween to this mesh's tweens array
-  addBehavior: function addBehavior(tween) {
-    this.tweens.push(tween);
-    return this;
-  },
-
-  // Creates a new tween and immediately adds it to this mesh's tweens array
-  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
-
-    var tween = this.makeBehavior.apply(this, arguments);
-    this.addBehavior(tween);
-    return this;
-  },
-
-  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-  pipe: function pipe(index) {
-    index = index || 0;
-    var timeline = new TimelineMax();
-
-    this.tweens.forEach(function (tween) {
-      timeline.add(tween);
-    });
-    //timeline.insertMultiple(this.tweens)
-
-    Four.arrangements[index].pipeline.pushTimeline(timeline);
-    this.removeBehaviors();
-    return this;
-  },
-
-  // Removes all tweens from this mesh
-  removeBehaviors: function removeBehaviors() {
-    this.tweens = [];
-  }
-
-};
-
 Four.Mesh.Box = function (preset) {
   preset = preset || new Four.Preset('defaults').mesh.box;
 
@@ -271,7 +171,7 @@ Four.Mesh.prototype.createSet = function (number, cb) {
 // createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
 Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
   var self = this;
-  var scene = Four.arrangements[0].scene;
+  var scene = Four.current().scene;
   var group = new Four.Object3D();
   group.add(self);
 
@@ -297,7 +197,7 @@ Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
 Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
   var self = this;
   self.visible = false;
-  var scene = Four.arrangements[0].scene;
+  var scene = Four.current().scene;
   var group = new Four.Object3D();
   group.add(self);
 
@@ -590,6 +490,114 @@ Four.Preset.prototype.simplePhysics = function () {
   return settings;
 };
 
+var p = {};
+Four.Behavior.behaviors = {
+  flipFlop: function flipFlop(amount, time) {
+    amount.repeat = -1;
+    amount.yoyo = true;
+    amount.delay = 0;
+    var tween = TweenMax.to(this.rotation, time, amount);
+    return tween;
+  },
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveBackAndForth: function moveBackAndForth(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+    target.repeat = -1;
+    target.yoyo = true;
+
+    var tween = TweenMax.to(this.position, time, target);
+
+    return tween;
+  },
+  moveFrom: function moveFrom(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  }
+
+};
+
+Four.Behavior.toPoints = function (v) {
+  return {
+    x: v.x,
+    y: v.y,
+    z: v.z
+  };
+};
+
+Four.Behavior.Apply = function (mesh) {
+  var handlers = Four.Behavior.Handler;
+
+  for (var handler in handlers) {
+    mesh[handler] = handlers[handler];
+    mesh.tweens = [];
+  }
+};
+
+Four.Behavior.Handler = {
+  // Creates a new tween based on the based in string, and returns it
+  makeBehavior: function makeBehavior(tweenString) {
+
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
+    this.tweens.push(tween);
+    return tween;
+  },
+
+  // Adds a tween to this mesh's tweens array
+  addBehavior: function addBehavior(tween) {
+    this.tweens.push(tween);
+    return this;
+  },
+
+  // Creates a new tween and immediately adds it to this mesh's tweens array
+  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
+
+    var tween = this.makeBehavior.apply(this, arguments);
+    this.addBehavior(tween);
+    return this;
+  },
+
+  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+  pipe: function pipe(index) {
+    index = index || 0;
+    var timeline = new TimelineMax();
+
+    this.tweens.forEach(function (tween) {
+      timeline.add(tween);
+    });
+    //timeline.insertMultiple(this.tweens)
+
+    Four.current().pipeline.pushTimeline(timeline);
+    this.removeBehaviors();
+    return this;
+  },
+
+  // Removes all tweens from this mesh
+  removeBehaviors: function removeBehaviors() {
+    this.tweens = [];
+  }
+
+};
+
 Four.Setup.prototype.Camera = function (preset) {
   if (!preset) preset = new Four.Preset('defaults').camera;
   var angle = preset.angle;
@@ -685,8 +693,8 @@ Four.Arrangement.prototype = {
   init: function init(preset) {
     var self = this;
 
-    // Add arrangement to the Four object
-    Four.addArrangement(self);
+    // Add arrangement to the Four object, and set it to the default
+    Four.addArrangement(self, true);
 
     //Setup a pipeline for this Arrangement
     this.pipeline = new Four.Pipeline();
@@ -748,6 +756,9 @@ Four.Arrangement.prototype = {
     this.updates.forEach(function (func) {
       if (typeof func === 'function') func();else func.func();
     });
+  },
+  addToUpdate: function addToUpdate(func) {
+    this.updates.push(func);
   },
   debug: function debug(preset) {
     if (preset === undefined) {
