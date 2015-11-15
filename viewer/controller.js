@@ -11,10 +11,27 @@ var arrangement = new Four.Arrangement(preset);
 var camera = arrangement.camera
 
 var box = new Four.Mesh.Box()
+box.position.x -= 70
 arrangement.addToScene(box)
 
-box.createSetCircle(8, 20)
+var counter = -20
 
+var group = box.createSetCircle(20, 30, function(mesh) {
+  mesh.material = Four.Preset.makeMaterial()
+  mesh.makeBehaviorAndAdd('flipFlop', {x:40}, 10)
+  mesh.pipe()
+
+  mesh.makeBehaviorAndAdd('moveBackAndForth', {x:counter+=5, y:30, z: 30}, 2)
+  mesh.pipe()
+
+
+  mesh.makeBehaviorAndAdd('moveBackAndForth', {x:0, y:0, z:0})
+  mesh.pipe()
+})
+
+console.log(group)
+group.makeBehaviorAndAdd('moveTo', {x:10, y:10, z: 10})
+group.pipe()
 
 // Place the new sphere object in the arrangement's scene
 arrangement.start()

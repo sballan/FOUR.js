@@ -11,53 +11,22 @@ Four.Mesh.make = function(string, preset) {
   return new makeNewMesh(type);
 }
 
-// createSet will create a number of clones of a given mesh, and place them in the scene at intervals determined by the targetSpacing. TargetSpacing is a Vector3, and so has x, y, and z fields.
-//
-// Four.Mesh.prototype.createSet = function(number, spacing, cb) {
-//   var self = this;
-//   var scene = Four.arrangements[0].scene;
-//   var meshes = []
-//
-//   var p = self.position
-//   var pSave = self.position
-//   spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0)
-//
-//   if(typeof cb === 'string') {
-//     cb = Four.Mesh[cb]
-//   }
-//
-//   for(var i = 0; i < number; i++) {
-//     var mesh = this.clone()
-//     mesh.position.set(p.x, p.y, p.z)
-//     mesh.position.add(spacing)
-//     scene.add(mesh)
-//     meshes.push(mesh)
-//     p.add(spacing)
-//
-//     //In the callback, we can affect the position of the next item AND the mesh
-//     if(cb) cb(mesh, p)
-//   }
-//   self.position.set(pSave.x, pSave.y, pSave.z)
-//   return meshes
-// }
-
+// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
 Four.Mesh.prototype.createSet = function(number, cb) {
   var self = this;
 
-  if(typeof cb === 'string') {
-    cb = Four.Mesh[cb]
-  }
-
   for(var i = 0; i < number; i++) {
     var mesh = self.clone()
-    if(cb) cb(mesh, p)
+    cb(mesh)
   }
 }
 
-Four.Mesh.prototype.createSetRow = function(number, spacing) {
+// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSetRow = function(number, spacing, cb) {
   var self = this;
   var scene = Four.arrangements[0].scene;
-  var meshes = []
+  var group = new Four.Object3D()
+  group.add(self)
 
   var p = self.position
   spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0)
@@ -65,19 +34,25 @@ Four.Mesh.prototype.createSetRow = function(number, spacing) {
   function createRow(mesh) {
     p.add(spacing)
     mesh.position.set(p.x, p.y, p.z)
-    scene.add(mesh)
-    meshes.push(mesh)
+    group.add(mesh)
+    //mesh.material.color.setHex(Four.Preset.randomColor())
+    if(typeof cb === 'function') cb(mesh)
   }
 
   self.createSet(number, createRow)
 
-  return meshes
+  scene.add(group)
+
+  return group
 }
 
-Four.Mesh.prototype.createSetCircle = function(number, radius) {
+// Be aware that this function will hide the original object
+Four.Mesh.prototype.createSetCircle = function(number, radius, cb) {
   var self = this;
+  self.visible = false
   var scene = Four.arrangements[0].scene;
-  var meshes = []
+  var group = new Four.Object3D()
+  group.add(self)
 
   var angleSize = Math.PI * 2 / number
   var angle = angleSize
@@ -89,22 +64,28 @@ Four.Mesh.prototype.createSetCircle = function(number, radius) {
 
     mesh.position.setX(x)
     mesh.position.setY(y)
-    scene.add(mesh)
-    meshes.push(mesh)
+    group.add(mesh)
 
     angle += angleSize
+
+    if(typeof cb === 'function') cb(mesh)
   }
 
   self.createSet(number, createCircle)
 
-  return meshes
+  scene.add(group)
+
+  return group
 }
 
 
 Four.Mesh.prototype.clone = function() {
+  var self = this
   var preset = new Four.Preset('defaults').mesh
-  preset.geometry = this.geometry
-  preset.material = this.material
+  preset.geometry = self.geometry
+  preset.material = self.material
+
+  console.log(self.constructor)
 
   return new Four.Mesh.constructor(preset)
 }
