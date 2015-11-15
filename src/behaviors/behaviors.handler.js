@@ -26,14 +26,19 @@ Four.Behavior.Handler = {
     return this
   },
   // TODO Now only supports 60fps, should use realtime framerate
-  makeContinously: function(data, options) {
+  makePositionContinously: function(data, func) {
     var self = this
-    //Make Async?
-    setTimeout(function(){
-      while(data.active) {
+    var fps = 1/60
 
-      }
-    }, 0)
+    if(typeof func === 'function') func(data)
+    // We need to bypass the usual pipeline for this to work.
+    var tween = TweenMax.to(self.position, fps, data)
+
+    // self.addBehavior(tween)
+    // self.pipe()
+    // self.__dirtyPosition = true
+    self.position.set(data.x, data.y, 0)
+
   },
   // TODO Now only supports 60fps, should use realtime framerate
   makePositionFromData: function(data, options) {
@@ -42,7 +47,7 @@ Four.Behavior.Handler = {
     //Make Async?
     setTimeout(function(){
       data.forEach(function(p) {
-        var tween = TweenMax.from(self.position, fps, p)
+        var tween = TweenMax.to(self.position, fps, p)
         self.addBehavior(tween)
       })
       self.pipe()
