@@ -7,11 +7,32 @@ Four.Preset.prototype.defaults = function() {
 		return Four.Preset.data.currentDefaults;
 }
 
-Four.Preset.prototype.changeDefaults = function(preset) {
+Four.Preset.update = function(preset, defaults) {
+	if(!preset) {
+		preset = defaults;
+		return;
+	}
+	else {
+		recurse(preset, defaults)
+	}
+
+	function recurse(preset, defaults) {
+		if(!preset) return
+		for(var d in defaults) {
+			if(preset.hasOwnProperty(d)) {
+				recurse(preset[d], defaults[d])
+			} else {
+				preset[d] = defaults[d]
+			}
+		}
+	}
+}
+
+Four.Preset.changeDefaults = function(preset) {
 	Four.Preset.data.currentDefaults = preset
 }
 
-Four.Preset.prototype.resetDefaults = function(preset) {
+Four.Preset.resetDefaults = function(preset) {
 	Four.Preset.data.currentDefaults = Four.Preset.data.defaults
 }
 

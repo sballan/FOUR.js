@@ -33,11 +33,15 @@ Four.Mesh = function (preset) {
     material = preset.material;
   }
 
-  THREE.Mesh.call(this, geometry, material);
+  // Superclass depends on whether or not physics is enabled
+  if (preset.physics) Physijs.Mesh.call(this, geometry, material);else THREE.Mesh.call(this, geometry, material);
 
   // By adding behaviors this way, we can get the effects of modifying the underlying Object3D object without doing a lot of extra work.
   Four.Behavior.Apply(this);
   this.physics = !!preset.physics;
+
+  this.prototype = Object.create(THREE.Mesh.prototype);
+  this.constructor = Four.Mesh;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -203,18 +207,263 @@ Four.Behavior.Handler = {
   // Removes all tweens from this mesh
   removeBehaviors: function removeBehaviors() {
     this.tweens = [];
+  },
+
+  physicsOn: function physicsOn() {
+    this.physics = true;
+  },
+
+  physicsOff: function physicsOff() {
+    this.physics = false;
   }
 
 };
 
+Four.Mesh.Box = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.box;
+
+  var width = preset.width;
+  var height = preset.height;
+  var depth = preset.depth;
+
+  preset.geometry = new THREE.BoxGeometry(width, height, depth);
+
+  if (preset.physics) {
+    var materialType = preset.materialType;
+    var materialOptions = preset.materialOptions;
+    preset.material = new THREE[materialType](materialOptions);
+    Physijs.BoxMesh.call(this, preset.geometry, preset.material);
+    Four.Behavior.Apply(this);
+  } else {
+    Four.Mesh.call(this, preset);
+  }
+  this.prototype = Object.create(Four.Mesh.prototype);
+  this.constructor = Four.Mesh.Box;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Box.constructor = Four.Mesh.Box;
+
+Four.Mesh.Circle = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.circle;
+
+  var radius = preset.radius;
+  var segments = preset.segments;
+
+  preset.geometry = new THREE.CircleGeometry(radius, segments);
+  Four.Mesh.call(this, preset);
+  this.prototype = Object.create(Four.Mesh.prototype);
+  this.constructor = Four.Mesh.Circle;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Circle.constructor = Four.Mesh.Circle;
+
+Four.Mesh.Cylinder = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.cylinder;
+
+  var radiusTop = preset.radiusTop;
+  var radiusBottom = preset.radiusBottom;
+  var height = preset.height;
+  var radiusSegments = preset.radiusSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
+  Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Cylinder;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
+
+//Class method to make a new mesh
+Four.Mesh.make = function (string, preset) {
+  if (!preset) preset = new Four.Preset('defaults').mesh;
+
+  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
+  var makeNewMesh = Four.Mesh[string];
+
+  // type will become the presets that should be passed to this new mesh
+  var type = preset[string];
+
+  return new makeNewMesh(type);
+};
+
+// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
+Four.Mesh.prototype.createSet = function (number, cb) {
+  var self = this;
+
+  for (var i = 0; i < number; i++) {
+    var mesh = self.clone();
+    cb(mesh);
+  }
+};
+
+// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
+  var self = this;
+  var scene = Four.current().scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var p = self.position;
+  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
+
+  function createRow(mesh) {
+    p.add(spacing);
+    mesh.position.set(p.x, p.y, p.z);
+    group.add(mesh);
+    //mesh.material.color.setHex(Four.Preset.randomColor())
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createRow);
+
+  scene.add(group);
+
+  return group;
+};
+
+// Be aware that this function will hide the original object
+Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
+  var self = this;
+  self.visible = false;
+  var scene = Four.current().scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var angleSize = Math.PI * 2 / number;
+  var angle = angleSize;
+  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
+
+  function createCircle(mesh, p) {
+    var x = center.x + radius * Math.cos(angle);
+    var y = center.y + radius * Math.sin(angle);
+
+    mesh.position.setX(x);
+    mesh.position.setY(y);
+    group.add(mesh);
+
+    angle += angleSize;
+
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createCircle);
+
+  scene.add(group);
+
+  return group;
+};
+
+Four.Mesh.prototype.clone = function () {
+  var self = this;
+  var preset = new Four.Preset('defaults').mesh;
+  preset.geometry = self.geometry;
+  preset.material = self.material;
+
+  return new self.constructor();
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
+};
+
+Four.Mesh.Ring = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.ring;
+
+  var innerRadius = preset.innerRadius;
+  var outerRadius = preset.outerRadius;
+  var thetaSegments = preset.thetaSegments;
+
+  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
+  Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Ring;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Ring.constructor = Four.Mesh.Ring;
+
+Four.Mesh.Sphere = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.sphere;
+
+  var radius = preset.radius;
+  var widthSegments = preset.widthSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Sphere;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+
+Four.Mesh.Torus = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.torus;
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var arc = preset.arc;
+
+  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
+  Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Torus;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Torus.constructor = Four.Mesh.Torus;
+
+Four.Mesh.TorusKnot = function (preset) {
+  preset = preset || new Four.Preset('defaults').mesh.torusKnot;
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var p = preset.p;
+  var q = preset.q;
+  var heightScale = preset.heightScale;
+
+  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
+  Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.TorusKnot;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
+
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: false,
+    debugMode: true,
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: true,
+      lookAtSceneContinously: false,
       resize: true,
       mouse: false
     },
@@ -242,7 +491,7 @@ Four.Preset.data = {
       positionZ: 200
     },
     scene: {
-      physics: false,
+      physics: true,
       fog: {
         inScene: true,
         color: 0x222222,
@@ -259,9 +508,9 @@ Four.Preset.data = {
         shininess: 2,
         reflectivity: 2
       },
-      physics: false,
+      physics: true,
       sphere: {
-        physics: false,
+        physics: true,
         x: 0,
         y: 0,
         z: 0,
@@ -289,7 +538,8 @@ Four.Preset.data = {
           specular: 0xb4b4b4b4,
           shininess: 2,
           reflectivity: 2
-        }
+        },
+        physics: true
       },
       circle: {
         radius: 5,
@@ -387,217 +637,6 @@ Four.Preset.prototype.simplePhysics = function () {
   return settings;
 };
 
-Four.Mesh.Box = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.box;
-
-  var width = preset.width;
-  var height = preset.height;
-  var depth = preset.depth;
-
-  preset.geometry = new THREE.BoxGeometry(width, height, depth);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Box.constructor = Four.Mesh.Box;
-
-Four.Mesh.Circle = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.circle;
-
-  var radius = preset.radius;
-  var segments = preset.segments;
-
-  preset.geometry = new THREE.CircleGeometry(radius, segments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Circle.constructor = Four.Mesh.Circle;
-
-Four.Mesh.Cylinder = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.cylinder;
-
-  var radiusTop = preset.radiusTop;
-  var radiusBottom = preset.radiusBottom;
-  var height = preset.height;
-  var radiusSegments = preset.radiusSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
-
-//Class method to make a new mesh
-Four.Mesh.make = function (string, preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh;
-
-  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-  var makeNewMesh = Four.Mesh[string];
-
-  // type will become the presets that should be passed to this new mesh
-  var type = preset[string];
-
-  return new makeNewMesh(type);
-};
-
-// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
-Four.Mesh.prototype.createSet = function (number, cb) {
-  var self = this;
-
-  for (var i = 0; i < number; i++) {
-    var mesh = self.clone();
-    cb(mesh);
-  }
-};
-
-// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
-  var self = this;
-  var scene = Four.current().scene;
-  var group = new Four.Object3D();
-  group.add(self);
-
-  var p = self.position;
-  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
-
-  function createRow(mesh) {
-    p.add(spacing);
-    mesh.position.set(p.x, p.y, p.z);
-    group.add(mesh);
-    //mesh.material.color.setHex(Four.Preset.randomColor())
-    if (typeof cb === 'function') cb(mesh);
-  }
-
-  self.createSet(number, createRow);
-
-  scene.add(group);
-
-  return group;
-};
-
-// Be aware that this function will hide the original object
-Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
-  var self = this;
-  self.visible = false;
-  var scene = Four.current().scene;
-  var group = new Four.Object3D();
-  group.add(self);
-
-  var angleSize = Math.PI * 2 / number;
-  var angle = angleSize;
-  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
-
-  function createCircle(mesh, p) {
-    var x = center.x + radius * Math.cos(angle);
-    var y = center.y + radius * Math.sin(angle);
-
-    mesh.position.setX(x);
-    mesh.position.setY(y);
-    group.add(mesh);
-
-    angle += angleSize;
-
-    if (typeof cb === 'function') cb(mesh);
-  }
-
-  self.createSet(number, createCircle);
-
-  scene.add(group);
-
-  return group;
-};
-
-Four.Mesh.prototype.clone = function () {
-  var self = this;
-  var preset = new Four.Preset('defaults').mesh;
-  preset.geometry = self.geometry;
-  preset.material = self.material;
-
-  console.log(self.constructor);
-
-  return new Four.Mesh.constructor(preset);
-};
-
-//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-Four.Mesh.prototype.processArgs = function () {
-  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-    return point;
-  } else return false;
-};
-
-Four.Mesh.Ring = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.ring;
-
-  var innerRadius = preset.innerRadius;
-  var outerRadius = preset.outerRadius;
-  var thetaSegments = preset.thetaSegments;
-
-  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Ring.constructor = Four.Mesh.Ring;
-
-Four.Mesh.Sphere = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere;
-
-  var radius = preset.radius;
-  var widthSegments = preset.widthSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
-
-Four.Mesh.Torus = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torus;
-
-  var radius = preset.radius;
-  var tube = preset.tube;
-  var radialSegments = preset.radialSegments;
-  var tubularSegments = preset.tubularSegments;
-  var arc = preset.arc;
-
-  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Torus.constructor = Four.Mesh.Torus;
-
-Four.Mesh.TorusKnot = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torusKnot;
-
-  var radius = preset.radius;
-  var tube = preset.tube;
-  var radialSegments = preset.radialSegments;
-  var tubularSegments = preset.tubularSegments;
-  var p = preset.p;
-  var q = preset.q;
-  var heightScale = preset.heightScale;
-
-  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
-  Four.Mesh.call(this, preset);
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
-
 Four.Setup.prototype.Camera = function (preset) {
   if (!preset) preset = new Four.Preset('defaults').camera;
   var angle = preset.angle;
@@ -677,7 +716,10 @@ Four.Setup.prototype.Scene = function (preset) {
   if (!preset) preset = new Four.Preset('defaults').scene;
 
   var scene; // Physics will be set on next line
-  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
+  if (preset.physics) {
+    scene = new Physijs.Scene();
+    scene.physics = true;
+  } else scene = new THREE.Scene(preset);
 
   //Set's whether or not the scene has fog
   if (preset.fog.inScene) {
@@ -736,7 +778,7 @@ Four.Arrangement.prototype = {
 
     //Sets up Orbit Controls
     if (preset.controls.OrbitControls) {
-      var controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+      var controls = new THREE.OrbitControls(self.camera, self.renderer.domElement);
       controls.addEventListener('change', update);
       controls.update();
     }
@@ -746,6 +788,12 @@ Four.Arrangement.prototype = {
       requestAnimationFrame(render);
       self.renderer.render(self.scene, self.camera);
       update();
+      if (!self.scene.physics) {
+        self.scene.traverse(function (obj) {
+          obj.__dirtyPosition = true;
+        });
+        self.scene.simulate();
+      }
     };
 
     TweenMax.ticker.addEventListener("tick", update);
@@ -754,8 +802,17 @@ Four.Arrangement.prototype = {
   },
   // Whatever function is passed in here is called every time the scene updates.
   update: function update() {
-    this.updates.forEach(function (func) {
-      if (typeof func === 'function') func();else func.func();
+    var self = this;
+    self.updates.forEach(function (func) {
+      // if(typeof func ==='function') func()
+      // else func.func()
+
+      if (self.scene.physics) {
+        self.scene.traverse(function (obj) {
+          obj.__dirtyPosition = true;
+        });
+        self.scene.simulate();
+      }
     });
   },
   addToUpdate: function addToUpdate(func) {
@@ -844,11 +901,31 @@ Four.Preset.prototype.defaults = function () {
   return Four.Preset.data.currentDefaults;
 };
 
-Four.Preset.prototype.changeDefaults = function (preset) {
+Four.Preset.update = function (preset, defaults) {
+  if (!preset) {
+    preset = defaults;
+    return;
+  } else {
+    recurse(preset, defaults);
+  }
+
+  function recurse(preset, defaults) {
+    if (!preset) return;
+    for (var d in defaults) {
+      if (preset.hasOwnProperty(d)) {
+        recurse(preset[d], defaults[d]);
+      } else {
+        preset[d] = defaults[d];
+      }
+    }
+  }
+};
+
+Four.Preset.changeDefaults = function (preset) {
   Four.Preset.data.currentDefaults = preset;
 };
 
-Four.Preset.prototype.resetDefaults = function (preset) {
+Four.Preset.resetDefaults = function (preset) {
   Four.Preset.data.currentDefaults = Four.Preset.data.defaults;
 };
 

@@ -6,6 +6,8 @@ Four.Mesh.Circle = function(preset) {
 
   preset.geometry = new THREE.CircleGeometry(radius, segments)
   Four.Mesh.call(this, preset)
+  this.prototype = Object.create(Four.Mesh.prototype)
+  this.constructor = Four.Mesh.Circle
 }
 
 // Setup the prototype and constructor for purposes of inheritance

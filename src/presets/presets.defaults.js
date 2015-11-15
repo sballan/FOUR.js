@@ -1,11 +1,11 @@
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
-    debugMode: false,
+    debugMode: true,
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: true,
+      lookAtSceneContinously: false,
       resize: true,
       mouse: false
     },
@@ -35,7 +35,7 @@ Four.Preset.data = {
       positionZ: 200
     },
     scene: {
-      physics: false,
+      physics: true,
       fog: {
         inScene: true,
         color: 0x222222,
@@ -52,9 +52,9 @@ Four.Preset.data = {
         shininess: 2,
         reflectivity: 2
       },
-      physics: false,
+      physics: true,
       sphere: {
-        physics: false,
+        physics: true,
         x: 0,
         y: 0,
         z: 0,
@@ -82,7 +82,8 @@ Four.Preset.data = {
           specular: 0xb4b4b4b4,
           shininess: 2,
           reflectivity: 2
-        }
+        },
+        physics: true
       },
       circle: {
         radius: 5,

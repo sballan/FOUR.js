@@ -32,14 +32,17 @@ Four.Mesh = function(preset) {
 		material = preset.material
 	}
 
-	THREE.Mesh.call(this, geometry, material)
+	// Superclass depends on whether or not physics is enabled
+	if(preset.physics) Physijs.Mesh.call(this, geometry, material)
+	else THREE.Mesh.call(this, geometry, material)
 
 	// By adding behaviors this way, we can get the effects of modifying the underlying Object3D object without doing a lot of extra work.
 	Four.Behavior.Apply(this)
 	this.physics = !!preset.physics
+
+	this.prototype = Object.create(THREE.Mesh.prototype)
+	this.constructor = Four.Mesh
 }
-
-
 
 // Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.prototype = Object.create(THREE.Mesh.prototype)

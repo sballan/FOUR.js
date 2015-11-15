@@ -41,6 +41,16 @@ Four.Behavior.Handler = {
   // Removes all tweens from this mesh
   removeBehaviors: function() {
     this.tweens = []
+  },
+
+  physicsOn: function() {
+    this.physics = true;
+  },
+
+  physicsOff: function() {
+    this.physics = false;
   }
+
+
 
 }

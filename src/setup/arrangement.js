@@ -47,7 +47,7 @@ Four.Arrangement.prototype = {
 
     //Sets up Orbit Controls
     if (preset.controls.OrbitControls) {
-       var controls = new THREE.OrbitControls( this.camera, this.renderer.domElement );
+       var controls = new THREE.OrbitControls( self.camera, self.renderer.domElement );
       controls.addEventListener( 'change', update );
       controls.update()
     }
@@ -57,6 +57,14 @@ Four.Arrangement.prototype = {
       requestAnimationFrame(render)
       self.renderer.render(self.scene, self.camera);
       update()
+      if(!self.scene.physics) {
+        self.scene.traverse(function(obj) {
+          obj.__dirtyPosition = true;
+        })
+        self.scene.simulate()
+      }
+
+
     }
 
     TweenMax.ticker.addEventListener("tick", update)
@@ -67,9 +75,18 @@ Four.Arrangement.prototype = {
   },
   // Whatever function is passed in here is called every time the scene updates.
   update: function() {
-    this.updates.forEach(function(func) {
-      if(typeof func ==='function') func()
-      else func.func()
+    var self = this
+    self.updates.forEach(function(func) {
+      // if(typeof func ==='function') func()
+      // else func.func()
+
+      if(self.scene.physics) {
+        self.scene.traverse(function(obj) {
+          obj.__dirtyPosition = true;
+        })
+        self.scene.simulate()
+
+      }
     })
 
   },

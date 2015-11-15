@@ -8,7 +8,7 @@
     ".jshintrc"
   ],
   "dependencies": {
-    "threejs": "r59",
+    "threejs": "~r72",
     "ammo.js": "kripken/ammo.js"
   },
   "homepage": "https://github.com/chandlerprall/Physijs",
