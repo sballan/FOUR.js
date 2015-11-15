@@ -42,10 +42,12 @@ var p = [
 window.addEventListener('mousemove', function(e) {
   var data = {
     x: e.clientX / 10,
-    y: e.clientY / 10,
+    y: 50 + e.clientY / 10 * -1,
     z: 0
   }
-b1.makePositionContinously(data)
+  b1.makePositionContinously(data, function(d) {
+    d.x -= 30
+  })
 })
 
 // b1.makePositionFromData(p)
