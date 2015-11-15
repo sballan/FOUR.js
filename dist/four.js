@@ -21,7 +21,9 @@ Four.Setup = function (options) {
 };
 
 Four.Mesh = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh;
+  if (!preset) preset = {};
+  defaults = new Four.Preset('defaults').mesh;
+  Four.Preset.update(preset, defaults);
 
   var geometry = preset.geometry;
   var material;
@@ -57,7 +59,10 @@ Four.Object3D.prototype = Object.create(THREE.Object3D.prototype);
 Four.Object3D.constructor = Four.Object3D;
 
 Four.Arrangement = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults');
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults');
+  Four.Preset.update(preset, defaults);
+
   this.debugMode = true;
 
   this.scene = null;
@@ -220,7 +225,9 @@ Four.Behavior.Handler = {
 };
 
 Four.Mesh.Box = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.box;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.box;
+  Four.Preset.update(preset, defaults);
 
   var width = preset.width;
   var height = preset.height;
@@ -246,7 +253,9 @@ Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Box.constructor = Four.Mesh.Box;
 
 Four.Mesh.Circle = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.circle;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.circle;
+  Four.Preset.update(preset, defaults);
 
   var radius = preset.radius;
   var segments = preset.segments;
@@ -262,7 +271,9 @@ Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Circle.constructor = Four.Mesh.Circle;
 
 Four.Mesh.Cylinder = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.cylinder;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.cylinder;
+  Four.Preset.update(preset, defaults);
 
   var radiusTop = preset.radiusTop;
   var radiusBottom = preset.radiusBottom;
@@ -283,7 +294,9 @@ Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
 
 //Class method to make a new mesh
 Four.Mesh.make = function (string, preset) {
-  if (!preset) preset = new Four.Preset('defaults').mesh;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh;
+  Four.Preset.update(preset, defaults);
 
   // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
   var makeNewMesh = Four.Mesh[string];
@@ -379,7 +392,9 @@ Four.Mesh.prototype.processArgs = function () {
 };
 
 Four.Mesh.Ring = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.ring;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.ring;
+  Four.Preset.update(preset, defaults);
 
   var innerRadius = preset.innerRadius;
   var outerRadius = preset.outerRadius;
@@ -397,7 +412,9 @@ Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Ring.constructor = Four.Mesh.Ring;
 
 Four.Mesh.Sphere = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.sphere;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.sphere;
+  Four.Preset.update(preset, defaults);
 
   var radius = preset.radius;
   var widthSegments = preset.widthSegments;
@@ -415,7 +432,9 @@ Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
 
 Four.Mesh.Torus = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torus;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.torus;
+  Four.Preset.update(preset, defaults);
 
   var radius = preset.radius;
   var tube = preset.tube;
@@ -435,7 +454,9 @@ Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.Torus.constructor = Four.Mesh.Torus;
 
 Four.Mesh.TorusKnot = function (preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torusKnot;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.torusKnot;
+  Four.Preset.update(preset, defaults);
 
   var radius = preset.radius;
   var tube = preset.tube;
@@ -455,6 +476,110 @@ Four.Mesh.TorusKnot = function (preset) {
 // Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
+
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = {};
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var defaults = new Four.Preset('defaults').camera;
+
+  Four.Preset.update(preset, defaults);
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
+
+  Four.Behavior.Apply(camera);
+
+  return camera;
+};
+
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
+
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').lights;
+  Four.Preset.update(preset, defaults);
+
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+  //var color = preset.color;
+
+  var light = new THREE.PointLight();
+  Four.Behavior.Apply(light);
+
+  light.position.set(positionX, positionY, positionZ);
+
+  return [light];
+};
+
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').renderer;
+  Four.Preset.update(preset, defaults);
+
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: antialias
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
+};
+
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').scene;
+  Four.Preset.update(preset, defaults);
+
+  var scene; // Physics will be set on next line
+  if (preset.physics) {
+    scene = new Physijs.Scene();
+    scene.physics = true;
+  } else scene = new THREE.Scene(preset);
+
+  //Set's whether or not the scene has fog
+  if (preset.fog.inScene) {
+    var color = preset.fog.color;
+    var near = preset.fog.near;
+    var far = preset.fog.far;
+    scene.fog = new THREE.Fog(color, near, far);
+  }
+  return scene;
+};
 
 Four.Preset.data = {
   currentDefaults: {},
@@ -637,100 +762,6 @@ Four.Preset.prototype.simplePhysics = function () {
   return settings;
 };
 
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  Four.Behavior.Apply(camera);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').lights;
-
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-  //var color = preset.color;
-
-  var light = new THREE.PointLight();
-  Four.Behavior.Apply(light);
-
-  light.position.set(positionX, positionY, positionZ);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').renderer;
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: antialias
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').scene;
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) {
-    scene = new Physijs.Scene();
-    scene.physics = true;
-  } else scene = new THREE.Scene(preset);
-
-  //Set's whether or not the scene has fog
-  if (preset.fog.inScene) {
-    var color = preset.fog.color;
-    var near = preset.fog.near;
-    var far = preset.fog.far;
-    scene.fog = new THREE.Fog(color, near, far);
-  }
-  return scene;
-};
-
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function init(preset) {
@@ -902,10 +933,15 @@ Four.Preset.prototype.defaults = function () {
 };
 
 Four.Preset.update = function (preset, defaults) {
-  if (!preset) {
-    preset = defaults;
+  if (!preset || preset === undefined) {
+    for (var elem in defaults) preset[elem] = defaults[elem];
     return;
   } else {
+    for (var prop in preset) {
+      if (!defaults.hasOwnProperty(prop)) {
+        console.error("Improper Preset object used.");
+      }
+    }
     recurse(preset, defaults);
   }
 
@@ -913,7 +949,9 @@ Four.Preset.update = function (preset, defaults) {
     if (!preset) return;
     for (var d in defaults) {
       if (preset.hasOwnProperty(d)) {
-        recurse(preset[d], defaults[d]);
+        setTimeout(function () {
+          recurse(preset[d], defaults[d]);
+        }, 0);
       } else {
         preset[d] = defaults[d];
       }
@@ -922,6 +960,7 @@ Four.Preset.update = function (preset, defaults) {
 };
 
 Four.Preset.changeDefaults = function (preset) {
+  Four.Preset.update(preset, Four.Preset.data.currentDefaults);
   Four.Preset.data.currentDefaults = preset;
 };
 

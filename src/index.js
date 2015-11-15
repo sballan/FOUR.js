@@ -20,7 +20,9 @@ Four.Setup = function (options) {
 }
 
 Four.Mesh = function(preset) {
-	preset = preset || new Four.Preset('defaults').mesh
+	if(!preset) preset = {}
+	defaults = new Four.Preset('defaults').mesh
+	Four.Preset.update(preset, defaults)
 
 	var geometry = preset.geometry
 	var material;
@@ -57,7 +59,10 @@ Four.Object3D.prototype = Object.create(THREE.Object3D.prototype)
 Four.Object3D.constructor = Four.Object3D
 
 Four.Arrangement = function(preset) {
-	if(!preset) preset = new Four.Preset('defaults')
+	if(!preset) preset = {}
+	var defaults = new Four.Preset('defaults')
+	Four.Preset.update(preset, defaults)
+
 	this.debugMode = true;
 
 	this.scene = null;

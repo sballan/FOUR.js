@@ -1,5 +1,7 @@
 Four.Mesh.Box = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.box
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.box
+	Four.Preset.update(preset, defaults)
 
   var width = preset.width
   var height = preset.height

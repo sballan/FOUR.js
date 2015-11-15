@@ -1,6 +1,8 @@
 //Class method to make a new mesh
 Four.Mesh.make = function(string, preset) {
-  if(!preset) preset = new Four.Preset('defaults').mesh;
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh
+	Four.Preset.update(preset, defaults)
 
   // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
   var makeNewMesh = Four.Mesh[string];

@@ -8,19 +8,26 @@ Four.Preset.prototype.defaults = function() {
 }
 
 Four.Preset.update = function(preset, defaults) {
-	if(!preset) {
-		preset = defaults;
+	if(!preset || preset === undefined) {
+		for(var elem in defaults) preset[elem] = defaults[elem]
 		return;
 	}
 	else {
-		recurse(preset, defaults)
+		for(var prop in preset) {
+			if (!defaults.hasOwnProperty(prop)) {
+				console.error("Improper Preset object used.")
+			}
+		}
+			recurse(preset, defaults)
 	}
 
 	function recurse(preset, defaults) {
 		if(!preset) return
 		for(var d in defaults) {
 			if(preset.hasOwnProperty(d)) {
-				recurse(preset[d], defaults[d])
+				setTimeout(function(){
+					recurse(preset[d], defaults[d])
+				}, 0)
 			} else {
 				preset[d] = defaults[d]
 			}
@@ -29,7 +36,8 @@ Four.Preset.update = function(preset, defaults) {
 }
 
 Four.Preset.changeDefaults = function(preset) {
-	Four.Preset.data.currentDefaults = preset
+	Four.Preset.update(preset, Four.Preset.data.currentDefaults);
+	Four.Preset.data.currentDefaults = preset;
 }
 
 Four.Preset.resetDefaults = function(preset) {

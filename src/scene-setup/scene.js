@@ -1,5 +1,7 @@
 Four.Setup.prototype.Scene = function (preset) {
-	if(!preset) preset = new Four.Preset('defaults').scene
+	if(!preset) preset = {}
+	var defaults = new Four.Preset('defaults').scene
+	Four.Preset.update(preset, defaults)
 
 	var scene;  // Physics will be set on next line
 	if(preset.physics) {

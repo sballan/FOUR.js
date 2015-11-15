@@ -1,5 +1,7 @@
 Four.Mesh.TorusKnot = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torusKnot
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.torusKnot
+	Four.Preset.update(preset, defaults)
 
   var radius = preset.radius;
   var tube = preset.tube;

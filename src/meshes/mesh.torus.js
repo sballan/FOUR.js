@@ -1,5 +1,7 @@
 Four.Mesh.Torus = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.torus
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.torus
+	Four.Preset.update(preset, defaults)
 
   var radius = preset.radius
   var tube = preset.tube

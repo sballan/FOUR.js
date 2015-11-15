@@ -1,5 +1,7 @@
 Four.Setup.prototype.Renderer = function (preset) {
-  if(!preset) preset = new Four.Preset('defaults').renderer
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').renderer
+	Four.Preset.update(preset, defaults)
 
   var clearColor = preset.clearColor;
   var shadowMap = preset.shadowMap;

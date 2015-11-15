@@ -1,5 +1,9 @@
 Four.Setup.prototype.Camera = function(preset) {
+  if(!preset) preset = {}
   if(!preset) preset = new Four.Preset('defaults').camera
+  var defaults = new Four.Preset('defaults').camera
+
+	Four.Preset.update(preset, defaults)
   var angle = preset.angle;
   var aspect = preset.aspect;
   var near = preset.near;

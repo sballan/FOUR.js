@@ -1,5 +1,7 @@
 Four.Mesh.Cylinder = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.cylinder
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.cylinder
+	Four.Preset.update(preset, defaults)
 
   var radiusTop = preset.radiusTop
   var radiusBottom = preset.radiusBottom

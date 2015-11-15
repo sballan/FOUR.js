@@ -1,5 +1,7 @@
 Four.Mesh.Ring = function(preset) {
-  preset = preset || new Four.Preset('defaults').mesh.ring
+  if(!preset) preset = {}
+  var defaults = new Four.Preset('defaults').mesh.ring
+	Four.Preset.update(preset, defaults)
 
   var innerRadius = preset.innerRadius
   var outerRadius = preset.outerRadius
