@@ -236,9 +236,9 @@ Four.Mesh.Box = function (preset) {
     Four.Behavior.Apply(this);
   } else {
     Four.Mesh.call(this, preset);
-    this.prototype = Object.create(Four.Mesh.prototype);
-    this.constructor = Four.Mesh.Box;
   }
+  this.prototype = Object.create(Four.Mesh.prototype);
+  this.constructor = Four.Mesh.Box;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -788,6 +788,12 @@ Four.Arrangement.prototype = {
       requestAnimationFrame(render);
       self.renderer.render(self.scene, self.camera);
       update();
+      if (!self.scene.physics) {
+        self.scene.traverse(function (obj) {
+          obj.__dirtyPosition = true;
+        });
+        self.scene.simulate();
+      }
     };
 
     TweenMax.ticker.addEventListener("tick", update);
@@ -798,7 +804,9 @@ Four.Arrangement.prototype = {
   update: function update() {
     var self = this;
     self.updates.forEach(function (func) {
-      if (typeof func === 'function') func();else func.func();
+      // if(typeof func ==='function') func()
+      // else func.func()
+
       if (self.scene.physics) {
         self.scene.traverse(function (obj) {
           obj.__dirtyPosition = true;
@@ -893,11 +901,31 @@ Four.Preset.prototype.defaults = function () {
   return Four.Preset.data.currentDefaults;
 };
 
-Four.Preset.prototype.changeDefaults = function (preset) {
+Four.Preset.update = function (preset, defaults) {
+  if (!preset) {
+    preset = defaults;
+    return;
+  } else {
+    recurse(preset, defaults);
+  }
+
+  function recurse(preset, defaults) {
+    if (!preset) return;
+    for (var d in defaults) {
+      if (preset.hasOwnProperty(d)) {
+        recurse(preset[d], defaults[d]);
+      } else {
+        preset[d] = defaults[d];
+      }
+    }
+  }
+};
+
+Four.Preset.changeDefaults = function (preset) {
   Four.Preset.data.currentDefaults = preset;
 };
 
-Four.Preset.prototype.resetDefaults = function (preset) {
+Four.Preset.resetDefaults = function (preset) {
   Four.Preset.data.currentDefaults = Four.Preset.data.defaults;
 };
 

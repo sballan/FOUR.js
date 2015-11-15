@@ -15,9 +15,9 @@ Four.Mesh.Box = function(preset) {
     Four.Behavior.Apply(this)
   }else {
     Four.Mesh.call(this, preset)
+  }
     this.prototype = Object.create(Four.Mesh.prototype)
     this.constructor = Four.Mesh.Box
-  }
 
 
 }
