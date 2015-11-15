@@ -87,7 +87,7 @@ Four.Mesh.prototype.clone = function() {
 
   console.log(self.constructor)
 
-  return new Four.Mesh.constructor(preset)
+  return new self.constructor()
 }
 
 

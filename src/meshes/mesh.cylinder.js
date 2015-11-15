@@ -9,6 +9,11 @@ Four.Mesh.Cylinder = function(preset) {
 
   preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments)
   Four.Mesh.call(this, preset)
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype)
+  Four.Mesh.Circle.constructor = Four.Mesh.Cylinder
+
+
 }
 
 // Setup the prototype and constructor for purposes of inheritance

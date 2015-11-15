@@ -38,6 +38,9 @@ Four.Mesh = function (preset) {
   // By adding behaviors this way, we can get the effects of modifying the underlying Object3D object without doing a lot of extra work.
   Four.Behavior.Apply(this);
   this.physics = !!preset.physics;
+
+  this.prototype = Object.create(THREE.Mesh.prototype);
+  this.constructor = Four.Mesh;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -224,6 +227,9 @@ Four.Mesh.Box = function (preset) {
 
   preset.geometry = new THREE.BoxGeometry(width, height, depth);
   Four.Mesh.call(this, preset);
+
+  this.prototype = Object.create(Four.Mesh.prototype);
+  this.constructor = Four.Mesh.Box;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -238,6 +244,8 @@ Four.Mesh.Circle = function (preset) {
 
   preset.geometry = new THREE.CircleGeometry(radius, segments);
   Four.Mesh.call(this, preset);
+  this.prototype = Object.create(Four.Mesh.prototype);
+  this.constructor = Four.Mesh.Circle;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -255,6 +263,9 @@ Four.Mesh.Cylinder = function (preset) {
 
   preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
   Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Cylinder;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -349,7 +360,7 @@ Four.Mesh.prototype.clone = function () {
 
   console.log(self.constructor);
 
-  return new Four.Mesh.constructor(preset);
+  return new self.constructor();
 };
 
 //TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
@@ -369,6 +380,9 @@ Four.Mesh.Ring = function (preset) {
 
   preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
   Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Ring;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -384,6 +398,9 @@ Four.Mesh.Sphere = function (preset) {
 
   preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
   Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Sphere;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -401,6 +418,9 @@ Four.Mesh.Torus = function (preset) {
 
   preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
   Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.Torus;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
@@ -420,11 +440,105 @@ Four.Mesh.TorusKnot = function (preset) {
 
   preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
   Four.Mesh.call(this, preset);
+
+  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+  Four.Mesh.Circle.constructor = Four.Mesh.TorusKnot;
 };
 
 // Setup the prototype and constructor for purposes of inheritance
 Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
 Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
+
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
+
+  Four.Behavior.Apply(camera);
+
+  return camera;
+};
+
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
+
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').lights;
+
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+  //var color = preset.color;
+
+  var light = new THREE.PointLight();
+  Four.Behavior.Apply(light);
+
+  light.position.set(positionX, positionY, positionZ);
+
+  return [light];
+};
+
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').renderer;
+
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: antialias
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
+};
+
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = new Four.Preset('defaults').scene;
+
+  var scene; // Physics will be set on next line
+  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
+
+  //Set's whether or not the scene has fog
+  if (preset.fog.inScene) {
+    var color = preset.fog.color;
+    var near = preset.fog.near;
+    var far = preset.fog.far;
+    scene.fog = new THREE.Fog(color, near, far);
+  }
+  return scene;
+};
 
 Four.Preset.data = {
   currentDefaults: {},
@@ -604,97 +718,6 @@ Four.Preset.prototype.simplePhysics = function () {
   settings.mesh.sphere.physics = true;
 
   return settings;
-};
-
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  Four.Behavior.Apply(camera);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').lights;
-
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-  //var color = preset.color;
-
-  var light = new THREE.PointLight();
-  Four.Behavior.Apply(light);
-
-  light.position.set(positionX, positionY, positionZ);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').renderer;
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: antialias
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = new Four.Preset('defaults').scene;
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) scene = new Physijs.Scene();else scene = new THREE.Scene();
-
-  //Set's whether or not the scene has fog
-  if (preset.fog.inScene) {
-    var color = preset.fog.color;
-    var near = preset.fog.near;
-    var far = preset.fog.far;
-    scene.fog = new THREE.Fog(color, near, far);
-  }
-  return scene;
 };
 
 Four.Arrangement.prototype = {

@@ -7,6 +7,10 @@ Four.Mesh.Box = function(preset) {
 
   preset.geometry = new THREE.BoxGeometry(width, height, depth)
   Four.Mesh.call(this, preset)
+
+  this.prototype = Object.create(Four.Mesh.prototype)
+  this.constructor = Four.Mesh.Box
+
 }
 
 // Setup the prototype and constructor for purposes of inheritance
