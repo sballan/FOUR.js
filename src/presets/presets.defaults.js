@@ -5,7 +5,7 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: false,
+      lookAtSceneContinously: true,
       resize: true,
       mouse: false
     },
@@ -30,9 +30,9 @@ Four.Preset.data = {
       aspect: window.innerWidth / window.innerHeight,
       near: 0.1,
       far: 500,
-      positionX: 0,
-      positionY: 60,
-      positionZ: 80
+      positionX: 20,
+      positionY: 0,
+      positionZ: 200
     },
     scene: {
       physics: false,

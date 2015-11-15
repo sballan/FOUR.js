@@ -3,7 +3,7 @@ Four.Behavior.behaviors = {
   flipFlop: function(amount, time) {
     amount.repeat = -1
     amount.yoyo = true
-    amount.delay =
+    amount.delay = 0
     var tween = TweenMax.to(this.rotation, time, amount)
     return tween
   },

@@ -28,7 +28,10 @@ Four.Behavior.Handler = {
     index = index || 0
     var timeline = new TimelineMax()
 
-    timeline.insertMultiple(this.tweens)
+    this.tweens.forEach(function(tween) {
+      timeline.add(tween)
+    })
+    //timeline.insertMultiple(this.tweens)
 
     Four.arrangements[index].pipeline.pushTimeline(timeline)
     this.removeBehaviors()
