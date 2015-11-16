@@ -1,29 +1,137 @@
 var arrangement = new Four.Arrangement()
 
-function demo01() {
-  var b1 = new Four.Mesh.Box().addToScene()
-}
-
 // demo01()
+// demo02()
+// demo03()
+// demo04()
+demo05()
+
+
+
+function demo01() {
+  //All you need is one line of code to get started
+  new Four.Mesh.Sphere().addToScene() //adding can be chained
+}
 
 function demo02() {
-  //var preset = new Four.Preset('defaults')
-  settings = {
-    materialType: 'MeshPhongMaterial',
-    materialOptions: {
-      color: 0xA2222A,
-      shininess: 10,
-      reflectivity: 70
-    }
-  }
-  var s1 = new Four.Mesh.Sphere(settings)
-  var s2 = s1.clone()
-  s2.position.x += 10
+  var s1 = new Four.Mesh.Box() //All objects are meshes
+  arrangement.addToScene(s1) // Arrangements call also add meshes
+  s1.position.setX(-100)
 
-  arrangement.addToScene([s1, s2])
+  // Make a new behavior for our mesh
+  var b = s1.makeBehavior('moveBackAndForth', {x:10,y:10,z:0}, 3)
+
+  // Add this behavior to the mesh's local timeline
+  s1.addBehavior(b)
+
+  // Send local timeline to master timeline
+  s1.pipe()
+
+  // Make a new behavior and add to local timeline
+  s1.makeBehaviorAndAdd('flipFlop', {y:4}, 1)
+  s1.pipe()
+
+  // Chain the piping
+  s1.makeBehaviorAndAdd('moveBackAndForth', {x:0, y:0, z:0}, 6)
+  .pipe()
+
+  // Start master timeline
+  arrangement.start()
+
 }
 
-demo02()
+function demo03() {
+  var s1 = new Four.Mesh.Box().addToScene()
+  s1.position.setX(-100)
+
+  // Create a set of meshes in a row, specified by number and spacing
+  g = s1.createSetRow(10, {x:10})
+
+  g.makeBehaviorAndAdd('moveBackAndForth', {x:10,y:10,z:0}, 3)
+  g.pipe()
+
+  // Animate the meshes in the group individually
+  g.children.forEach(function(m) {
+    m.makeBehaviorAndAdd('flipFlop', {y:4}, 1)
+    m.makeBehaviorAndAdd('moveBackAndForth', {x:0, y:0, z:0}, 6)
+    // Don't pipe to keep on local timeline; animation start immediately
+  })
+  g.pipe()
+
+  arrangement.start()
+}
+
+function demo04() {
+  var s1 = new Four.Mesh.Box().addToScene()
+  s1.position.setX(-100)
+
+  // Create a set of meshes in a circle, specified by number and radius
+  g = s1.createSetCircle(20, 10)
+
+  g.makeBehaviorAndAdd('moveBackAndForth', {x:10,y:10,z:0}, 3)
+  g.pipe()
+
+  // Animate the meshes in the group individually with a counter
+  var counter = -100
+  g.children.forEach(function(m) {
+    m.makeBehaviorAndAdd('flipFlop', {y:4}, 1)
+    m.makeBehaviorAndAdd('moveBackAndForth', {x:counter+=10, y:10, z:0}, 4)
+    // Don't pipe to keep on local timeline; animation start immediately
+  })
+  g.pipe()
+
+  arrangement.start()
+}
+
+function demo05() {
+  var s = new Four.Mesh.Sphere().addToScene()
+
+  //Set to random material
+  s.material = Four.Preset.makeMaterial()
+
+  //A data set preformatted to coordinates
+  var counter = 1
+  var data = [
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=1, z: 5},
+    {x:counter -= 1, y:counter+=1, z: 5},
+    {x:counter -= 1, y:counter+=1, z: 5},
+    {x:counter -= 1, y:counter+=0, z: 5},
+    {x:counter -= 1, y:counter+=0, z: 5},
+    {x:counter -= 1, y:counter+=0, z: 5},
+    {x:counter -= 1, y:counter-=0, z: 5},
+    {x:counter += 4, y:counter-=0, z: 5},
+    {x:counter += 4, y:counter-=0, z: 5},
+    {x:counter += 4, y:counter-=2, z: 5},
+    {x:counter += 2, y:counter-=2, z: 5},
+    {x:counter += 2, y:counter-=2, z: 5},
+    {x:counter += 2, y:counter-=2, z: 5},
+    {x:counter += 2, y:counter-=2, z: 5},
+    {x:counter += 2, y:counter-=2, z: 5},
+    {x:counter += 2, y:counter-=4, z: 5},
+    {x:counter += 4, y:counter-=4, z: 5},
+    {x:counter += 4, y:counter-=4, z: 5},
+    {x:counter -= 1, y:counter-=4, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5},
+    {x:counter -= 1, y:counter+=2, z: 5}
+
+  ]
+
+  s.makePositionFromData(data)
+
+  arrangement.start()
+}
+
+
+
 
 
 function demo10() {
@@ -33,29 +141,7 @@ function demo10() {
   .addToScene(b1)
 
   var counter = 1
-  var p = [
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-    {x:counter += 4, y:2, z: 5},
-  ]
+
 
 
 

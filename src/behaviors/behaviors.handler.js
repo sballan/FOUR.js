@@ -46,7 +46,9 @@ Four.Behavior.Handler = {
     var fps = 1/60
     //Make Async?
     setTimeout(function(){
+      console.log("in set timeout")
       data.forEach(function(p) {
+        console.log("data = ", p)
         var tween = TweenMax.to(self.position, fps, p)
         self.addBehavior(tween)
       })
@@ -55,17 +57,17 @@ Four.Behavior.Handler = {
   },
 
   // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-  pipe: function(index) {
-    index = index || 0
+  pipe: function() {
+    var self = this
     var timeline = new TimelineMax()
 
-    this.tweens.forEach(function(tween) {
+    self.tweens.forEach(function(tween) {
       timeline.add(tween)
     })
 
     Four.current().pipeline.pushTimeline(timeline)
-    this.removeBehaviors()
-    return this;
+    self.removeBehaviors()
+    return self;
   },
 
   // Removes all tweens from this mesh

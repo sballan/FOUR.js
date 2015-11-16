@@ -1,6 +1,7 @@
 Four.Mesh.prototype.addToScene = function() {
   var self = this
   Four.current().addToScene(self)
+  return self
 }
 
 // createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.

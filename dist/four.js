@@ -107,6 +107,157 @@ Four.Help = function (arrangement) {
   return response;
 };
 
+var p = {};
+Four.Behavior.behaviors = {
+  flipFlop: function flipFlop(amount, time, repeat) {
+    repeat = repeat || -1;
+    amount.repeat = repeat;
+    amount.yoyo = true;
+    amount.delay = 0;
+    var tween = TweenMax.to(this.rotation, time, amount);
+    return tween;
+  },
+  moveTo: function moveTo(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveTo;
+    //Give time a fallback value
+    time = time || preset.time;
+
+    target = Four.Behavior.toPoints(target);
+
+    var tween = TweenMax.to(this.position, time, target);
+    return tween;
+  },
+  moveBackAndForth: function moveBackAndForth(target, time, repeat) {
+    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
+    //Give time a fallback value
+    time = time || preset.time;
+    repeat = repeat || -1;
+    target = Four.Behavior.toPoints(target);
+    target.repeat = repeat;
+    target.yoyo = true;
+
+    var tween = TweenMax.to(this.position, time, target);
+
+    return tween;
+  },
+  moveFrom: function moveFrom(target, time) {
+    var preset = new Four.Preset('defaults').behaviors.moveFrom;
+    //Give time a fallback value
+    time = time || preset.time;
+    target = target || preset.target;
+
+    var tween = TweenMax.from(this.position, time, target);
+    return tween;
+  },
+  data: function data(_data, options) {}
+
+};
+
+Four.Behavior.toPoints = function (v) {
+  return {
+    x: v.x,
+    y: v.y,
+    z: v.z
+  };
+};
+
+Four.Behavior.Apply = function (mesh) {
+  var handlers = Four.Behavior.Handler;
+
+  for (var handler in handlers) {
+    mesh[handler] = handlers[handler];
+    mesh.tweens = [];
+  }
+};
+
+Four.Behavior.Handler = {
+  // Creates a new tween based on the based in string, and returns it
+  makeBehavior: function makeBehavior(tweenString) {
+    var self = this;
+    var args = Array.prototype.slice.call(arguments, 1);
+    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
+    this.tweens.push(tween);
+    return tween;
+  },
+
+  // Adds a tween to this mesh's tweens array
+  addBehavior: function addBehavior(tween) {
+    var self = this;
+    if (tween.constructor === Array) {
+      tween.forEach(function (t) {
+        self.tweens.push(t);
+      });
+    } else {
+      self.tweens.push(tween);
+    }
+    return self;
+  },
+
+  // Creates a new tween and immediately adds it to this mesh's tweens array
+  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
+    var tween = this.makeBehavior.apply(this, arguments);
+    this.addBehavior(tween);
+    return this;
+  },
+  // TODO Now only supports 60fps, should use realtime framerate
+  makePositionContinously: function makePositionContinously(data, func) {
+    var self = this;
+    var fps = 1 / 60;
+
+    if (typeof func === 'function') func(data);
+    // We need to bypass the usual pipeline for this to work.
+    var tween = TweenMax.to(self.position, fps, data);
+
+    // self.addBehavior(tween)
+    // self.pipe()
+    // self.__dirtyPosition = true
+    self.position.set(data.x, data.y, 0);
+  },
+  // TODO Now only supports 60fps, should use realtime framerate
+  makePositionFromData: function makePositionFromData(data, options) {
+    var self = this;
+    var fps = 1 / 60;
+    //Make Async?
+    setTimeout(function () {
+      console.log("in set timeout");
+      data.forEach(function (p) {
+        console.log("data = ", p);
+        var tween = TweenMax.to(self.position, fps, p);
+        self.addBehavior(tween);
+      });
+      self.pipe();
+    }, 0);
+  },
+
+  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
+  pipe: function pipe() {
+    var self = this;
+    var timeline = new TimelineMax();
+
+    self.tweens.forEach(function (tween) {
+      timeline.add(tween);
+    });
+
+    Four.current().pipeline.pushTimeline(timeline);
+    self.removeBehaviors();
+    return self;
+  },
+
+  // Removes all tweens from this mesh
+  removeBehaviors: function removeBehaviors() {
+    this.tweens = [];
+  },
+
+  physicsOn: function physicsOn() {
+    this.physics = true;
+  },
+
+  physicsOff: function physicsOff() {
+    this.physics = false;
+  }
+
+};
+
 Four.Preset.data = {
   currentDefaults: {},
   defaults: {
@@ -114,12 +265,12 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: true,
+      lookAtSceneContinously: false,
       resize: true,
       mouse: false
     },
     renderer: {
-      clearColor: 0x111111,
+      clearColor: 0x999999,
       shadowMap: true,
       shadowMapSoft: true,
       antialias: true
@@ -139,9 +290,9 @@ Four.Preset.data = {
       aspect: window.innerWidth / window.innerHeight,
       near: 0.1,
       far: 500,
-      positionX: 20,
-      positionY: 0,
-      positionZ: 200
+      positionX: 100,
+      positionY: 10,
+      positionZ: 100
     },
     scene: {
       physics: false,
@@ -290,265 +441,6 @@ Four.Preset.prototype.simplePhysics = function () {
   return settings;
 };
 
-Four.Mesh.Box = function (preset) {
-  var self = this;
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.box;
-  Four.Preset.update(preset, defaults);
-
-  var width = preset.width;
-  var height = preset.height;
-  var depth = preset.depth;
-
-  preset.geometry = new THREE.BoxGeometry(width, height, depth);
-
-  if (preset.physics) {
-    var materialType = preset.materialType;
-    var materialOptions = preset.materialOptions;
-    preset.material = new THREE[materialType](materialOptions);
-    Physijs.BoxMesh.call(this, preset.geometry, preset.material);
-    Four.Behavior.Apply(this);
-  } else {
-    Four.Mesh.call(this, preset);
-    self.prototype = Object.create(Four.Mesh.prototype);
-    self.prototype.constructor = Four.Mesh.Box;
-  }
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Box.constructor = Four.Mesh.Box;
-
-Four.Mesh.Circle = function (preset) {
-  var self = this;
-
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.circle;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var segments = preset.segments;
-
-  preset.geometry = new THREE.CircleGeometry(radius, segments);
-  Four.Mesh.call(this, preset);
-
-  self.prototype = Object.create(Four.Mesh.prototype);
-  self.constructor = Four.Mesh.Circle;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Circle.constructor = Four.Mesh.Circle;
-
-Four.Mesh.Cylinder = function (preset) {
-  var self = this;
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.cylinder;
-  Four.Preset.update(preset, defaults);
-
-  var radiusTop = preset.radiusTop;
-  var radiusBottom = preset.radiusBottom;
-  var height = preset.height;
-  var radiusSegments = preset.radiusSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
-  Four.Mesh.call(self, preset);
-
-  self.prototype = Object.create(Four.Mesh.prototype);
-  self.prototype.constructor = Four.Mesh.Cylinder;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
-
-Four.Mesh.prototype.addToScene = function () {
-  var self = this;
-  Four.current().addToScene(self);
-};
-
-// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
-Four.Mesh.prototype.createSet = function (number, cb) {
-  var self = this;
-
-  for (var i = 0; i < number; i++) {
-    var mesh = self.clone();
-    cb(mesh);
-  }
-};
-
-// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
-  var self = this;
-  var save = self.position;
-  var scene = Four.current().scene;
-  var group = new Four.Object3D();
-  group.add(self);
-
-  var p = self.position;
-  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
-
-  function createRow(mesh) {
-    p.add(spacing);
-    mesh.position.set(p.x, p.y, p.z);
-    group.add(mesh);
-    //mesh.material.color.setHex(Four.Preset.randomColor())
-    if (typeof cb === 'function') cb(mesh);
-  }
-
-  self.createSet(number, createRow);
-
-  scene.add(group);
-
-  self.position.set(save.x, save.y, save.z);
-  return group;
-};
-
-// Be aware that this function will hide the original object
-Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
-  var self = this;
-  self.visible = false;
-  var scene = Four.current().scene;
-  var group = new Four.Object3D();
-  group.add(self);
-
-  var angleSize = Math.PI * 2 / number;
-  var angle = angleSize;
-  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
-
-  function createCircle(mesh, p) {
-    var x = center.x + radius * Math.cos(angle);
-    var y = center.y + radius * Math.sin(angle);
-
-    mesh.position.setX(x);
-    mesh.position.setY(y);
-    group.add(mesh);
-
-    angle += angleSize;
-
-    if (typeof cb === 'function') cb(mesh);
-  }
-
-  self.createSet(number, createCircle);
-
-  scene.add(group);
-
-  return group;
-};
-
-Four.Mesh.prototype.clone = function () {
-  // if(!preset) preset = {}
-  // var defaults = new Four.Preset('defaults').mesh
-  // Four.Preset.update(preset, defaults)
-
-  var self = this;
-  var preset = {};
-  preset.geometry = self.geometry;
-  preset.material = self.material;
-
-  return new self.constructor(preset);
-};
-
-//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-Four.Mesh.prototype.processArgs = function () {
-  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-    return point;
-  } else return false;
-};
-
-Four.Mesh.Ring = function (preset) {
-  var self = this;
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.ring;
-  Four.Preset.update(preset, defaults);
-
-  var innerRadius = preset.innerRadius;
-  var outerRadius = preset.outerRadius;
-  var thetaSegments = preset.thetaSegments;
-
-  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
-  Four.Mesh.call(this, preset);
-
-  self.prototype = Object.create(Four.Mesh.prototype);
-  self.prototype.constructor = Four.Mesh.Ring;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Ring.constructor = Four.Mesh.Ring;
-
-Four.Mesh.Sphere = function (preset) {
-  var self = this;
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.sphere;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var widthSegments = preset.widthSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-  Four.Mesh.call(self, preset);
-
-  self.prototype = Object.create(Four.Mesh.prototype);
-  self.prototype.constructor = Four.Mesh.Sphere;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
-Four.Mesh.Sphere.prototype.constructor = Four.Mesh.Sphere;
-
-Four.Mesh.Torus = function (preset) {
-  var self = this;
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.torus;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var tube = preset.tube;
-  var radialSegments = preset.radialSegments;
-  var tubularSegments = preset.tubularSegments;
-  var arc = preset.arc;
-
-  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
-  Four.Mesh.call(self, preset);
-
-  self.prototype = Object.create(Four.Mesh.prototype);
-  self.prototype.constructor = Four.Mesh.Torus;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Torus.constructor = Four.Mesh.Torus;
-
-Four.Mesh.TorusKnot = function (preset) {
-  var self = this;
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.torusKnot;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var tube = preset.tube;
-  var radialSegments = preset.radialSegments;
-  var tubularSegments = preset.tubularSegments;
-  var p = preset.p;
-  var q = preset.q;
-  var heightScale = preset.heightScale;
-
-  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
-  Four.Mesh.call(this, preset);
-
-  self.prototype = Object.create(Four.Mesh.prototype);
-  self.prototype.constructor = Four.Mesh.TorusKnot;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
-
 Four.Setup.prototype.Camera = function (preset) {
   if (!preset) preset = {};
   if (!preset) preset = new Four.Preset('defaults').camera;
@@ -651,155 +543,6 @@ Four.Setup.prototype.Scene = function (preset) {
     scene.fog = new THREE.Fog(color, near, far);
   }
   return scene;
-};
-
-var p = {};
-Four.Behavior.behaviors = {
-  flipFlop: function flipFlop(amount, time, repeat) {
-    repeat = repeat || -1;
-    amount.repeat = repeat;
-    amount.yoyo = true;
-    amount.delay = 0;
-    var tween = TweenMax.to(this.rotation, time, amount);
-    return tween;
-  },
-  moveTo: function moveTo(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveTo;
-    //Give time a fallback value
-    time = time || preset.time;
-
-    target = Four.Behavior.toPoints(target);
-
-    var tween = TweenMax.to(this.position, time, target);
-    return tween;
-  },
-  moveBackAndForth: function moveBackAndForth(target, time, repeat) {
-    var preset = new Four.Preset('defaults').behaviors.moveBackAndForth;
-    //Give time a fallback value
-    time = time || preset.time;
-    repeat = repeat || -1;
-    target = Four.Behavior.toPoints(target);
-    target.repeat = repeat;
-    target.yoyo = true;
-
-    var tween = TweenMax.to(this.position, time, target);
-
-    return tween;
-  },
-  moveFrom: function moveFrom(target, time) {
-    var preset = new Four.Preset('defaults').behaviors.moveFrom;
-    //Give time a fallback value
-    time = time || preset.time;
-    target = target || preset.target;
-
-    var tween = TweenMax.from(this.position, time, target);
-    return tween;
-  },
-  data: function data(_data, options) {}
-
-};
-
-Four.Behavior.toPoints = function (v) {
-  return {
-    x: v.x,
-    y: v.y,
-    z: v.z
-  };
-};
-
-Four.Behavior.Apply = function (mesh) {
-  var handlers = Four.Behavior.Handler;
-
-  for (var handler in handlers) {
-    mesh[handler] = handlers[handler];
-    mesh.tweens = [];
-  }
-};
-
-Four.Behavior.Handler = {
-  // Creates a new tween based on the based in string, and returns it
-  makeBehavior: function makeBehavior(tweenString) {
-    var self = this;
-    var args = Array.prototype.slice.call(arguments, 1);
-    var tween = Four.Behavior.behaviors[tweenString].apply(self, args);
-    this.tweens.push(tween);
-    return tween;
-  },
-
-  // Adds a tween to this mesh's tweens array
-  addBehavior: function addBehavior(tween) {
-    var self = this;
-    if (tween.constructor === Array) {
-      tween.forEach(function (t) {
-        self.tweens.push(t);
-      });
-    } else {
-      self.tweens.push(tween);
-    }
-    return self;
-  },
-
-  // Creates a new tween and immediately adds it to this mesh's tweens array
-  makeBehaviorAndAdd: function makeBehaviorAndAdd() {
-    var tween = this.makeBehavior.apply(this, arguments);
-    this.addBehavior(tween);
-    return this;
-  },
-  // TODO Now only supports 60fps, should use realtime framerate
-  makePositionContinously: function makePositionContinously(data, func) {
-    var self = this;
-    var fps = 1 / 60;
-
-    if (typeof func === 'function') func(data);
-    // We need to bypass the usual pipeline for this to work.
-    var tween = TweenMax.to(self.position, fps, data);
-
-    // self.addBehavior(tween)
-    // self.pipe()
-    // self.__dirtyPosition = true
-    self.position.set(data.x, data.y, 0);
-  },
-  // TODO Now only supports 60fps, should use realtime framerate
-  makePositionFromData: function makePositionFromData(data, options) {
-    var self = this;
-    var fps = 1 / 60;
-    //Make Async?
-    setTimeout(function () {
-      data.forEach(function (p) {
-        var tween = TweenMax.to(self.position, fps, p);
-        self.addBehavior(tween);
-      });
-      self.pipe();
-    }, 0);
-  },
-
-  // Sends all of this mesh's tweens to the Pipeline where they will be added to the masterTimeline, then destroys this mesh's tweens array.  Defaults to pipe to arrangement at index 0, which will almost always be the arrangement you want to add to (and the only one there is).
-  pipe: function pipe(index) {
-    index = index || 0;
-    var timeline = new TimelineMax();
-
-    this.tweens.forEach(function (tween) {
-      timeline.add(tween);
-    });
-
-    Four.current().pipeline.pushTimeline(timeline);
-    this.removeBehaviors();
-    return this;
-  },
-
-  // Removes all tweens from this mesh
-  removeBehaviors: function removeBehaviors() {
-    this.tweens = [];
-  },
-
-  physicsOn: function physicsOn() {
-    this.physics = true;
-  },
-
-  physicsOff: function physicsOff() {
-    this.physics = false;
-  }
-
 };
 
 Four.Arrangement.prototype = {
@@ -1022,11 +765,11 @@ Four.Preset.resetDefaults = function (preset) {
 };
 
 Four.Preset.makeMaterial = function () {
-  return new THREE.MeshPhongMaterial({
+  return new THREE.MeshLambertMaterial({
     color: Four.Preset.randomColor(),
-    specular: 0xb4b4b4b4,
-    shininess: 2,
-    reflectivity: 1
+    // specular: 0xb4b4b4b4,
+    // shininess: 2,
+    reflectivity: 10
   });
 };
 
@@ -1050,3 +793,263 @@ Four.Utils = {
   }
 
 };
+
+Four.Mesh.Box = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.box;
+  Four.Preset.update(preset, defaults);
+
+  var width = preset.width;
+  var height = preset.height;
+  var depth = preset.depth;
+
+  preset.geometry = new THREE.BoxGeometry(width, height, depth);
+
+  if (preset.physics) {
+    var materialType = preset.materialType;
+    var materialOptions = preset.materialOptions;
+    preset.material = new THREE[materialType](materialOptions);
+    Physijs.BoxMesh.call(this, preset.geometry, preset.material);
+    Four.Behavior.Apply(this);
+  } else {
+    Four.Mesh.call(this, preset);
+    self.prototype = Object.create(Four.Mesh.prototype);
+    self.prototype.constructor = Four.Mesh.Box;
+  }
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Box.constructor = Four.Mesh.Box;
+
+Four.Mesh.Circle = function (preset) {
+  var self = this;
+
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.circle;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var segments = preset.segments;
+
+  preset.geometry = new THREE.CircleGeometry(radius, segments);
+  Four.Mesh.call(this, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.constructor = Four.Mesh.Circle;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Circle.constructor = Four.Mesh.Circle;
+
+Four.Mesh.Cylinder = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.cylinder;
+  Four.Preset.update(preset, defaults);
+
+  var radiusTop = preset.radiusTop;
+  var radiusBottom = preset.radiusBottom;
+  var height = preset.height;
+  var radiusSegments = preset.radiusSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
+  Four.Mesh.call(self, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Cylinder;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
+
+Four.Mesh.prototype.addToScene = function () {
+  var self = this;
+  Four.current().addToScene(self);
+  return self;
+};
+
+// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
+Four.Mesh.prototype.createSet = function (number, cb) {
+  var self = this;
+
+  for (var i = 0; i < number; i++) {
+    var mesh = self.clone();
+    cb(mesh);
+  }
+};
+
+// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
+  var self = this;
+  var save = self.position;
+  var scene = Four.current().scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var p = self.position;
+  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
+
+  function createRow(mesh) {
+    p.add(spacing);
+    mesh.position.set(p.x, p.y, p.z);
+    group.add(mesh);
+    //mesh.material.color.setHex(Four.Preset.randomColor())
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createRow);
+
+  scene.add(group);
+
+  self.position.set(save.x, save.y, save.z);
+  return group;
+};
+
+// Be aware that this function will hide the original object
+Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
+  var self = this;
+  self.visible = false;
+  var scene = Four.current().scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var angleSize = Math.PI * 2 / number;
+  var angle = angleSize;
+  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
+
+  function createCircle(mesh, p) {
+    var x = center.x + radius * Math.cos(angle);
+    var y = center.y + radius * Math.sin(angle);
+
+    mesh.position.setX(x);
+    mesh.position.setY(y);
+    group.add(mesh);
+
+    angle += angleSize;
+
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createCircle);
+
+  scene.add(group);
+
+  return group;
+};
+
+Four.Mesh.prototype.clone = function () {
+  // if(!preset) preset = {}
+  // var defaults = new Four.Preset('defaults').mesh
+  // Four.Preset.update(preset, defaults)
+
+  var self = this;
+  var preset = {};
+  preset.geometry = self.geometry;
+  preset.material = self.material;
+
+  return new self.constructor(preset);
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
+};
+
+Four.Mesh.Ring = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.ring;
+  Four.Preset.update(preset, defaults);
+
+  var innerRadius = preset.innerRadius;
+  var outerRadius = preset.outerRadius;
+  var thetaSegments = preset.thetaSegments;
+
+  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
+  Four.Mesh.call(this, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Ring;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Ring.constructor = Four.Mesh.Ring;
+
+Four.Mesh.Sphere = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.sphere;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var widthSegments = preset.widthSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  Four.Mesh.call(self, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Sphere;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+Four.Mesh.Sphere.prototype.constructor = Four.Mesh.Sphere;
+
+Four.Mesh.Torus = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.torus;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var arc = preset.arc;
+
+  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
+  Four.Mesh.call(self, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Torus;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Torus.constructor = Four.Mesh.Torus;
+
+Four.Mesh.TorusKnot = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.torusKnot;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var p = preset.p;
+  var q = preset.q;
+  var heightScale = preset.heightScale;
+
+  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
+  Four.Mesh.call(this, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.TorusKnot;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;

@@ -5,12 +5,12 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: true,
+      lookAtSceneContinously: false,
       resize: true,
       mouse: false
     },
     renderer: {
-      clearColor: 0x111111,
+      clearColor: 0x999999,
       shadowMap: true,
       shadowMapSoft: true,
       antialias: true
@@ -32,9 +32,9 @@ Four.Preset.data = {
       aspect: window.innerWidth / window.innerHeight,
       near: 0.1,
       far: 500,
-      positionX: 20,
-      positionY: 0,
-      positionZ: 200
+      positionX: 100,
+      positionY: 10,
+      positionZ: 100
     },
     scene: {
       physics: false,
