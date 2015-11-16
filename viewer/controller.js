@@ -4,8 +4,8 @@ var arrangement = new Four.Arrangement()
 // demo02()
 // demo03()
 // demo04()
-demo05()
-
+// demo05()
+demo06()
 
 
 function demo01() {
@@ -130,36 +130,33 @@ function demo05() {
   arrangement.start()
 }
 
-
-
-
-
-function demo10() {
-
-
+function demo06() {
   var b1 = new Four.Mesh.Box()
   .addToScene(b1)
 
-  var counter = 1
+  var b2 = b1.clone()
+  b2.addToScene()
 
+  b1.makeBehaviorAndAdd('flipFlop', {y:6}, 3)
 
-
-
-  window.addEventListener('mousemove', function(e) {
+  arrangement.addListener('mousemove', function(e) {
     var data = {
       x: e.clientX / 10,
       y: 50 + e.clientY / 10 * -1,
       z: 0
     }
+
     b1.makePositionContinously(data, function(d) {
       d.x -= 30
     })
+
+    b2.makeRotationContinously(data, function(d) {
+      d.y *= -1
+    })
   })
-
-  // b1.makePositionFromData(p)
-
-
 }
+
+
 // Place the new sphere object in the arrangement's scene
 // arrangement.start()
 

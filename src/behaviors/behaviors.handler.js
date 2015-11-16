@@ -30,14 +30,35 @@ Four.Behavior.Handler = {
     var self = this
     var fps = 1/60
 
-    if(typeof func === 'function') func(data)
+    var copy = {
+      x:data.x || 0,
+      y:data.y || 0,
+      z:data.z || 0
+    }
+
+    if(typeof func === 'function') func(copy)
     // We need to bypass the usual pipeline for this to work.
-    var tween = TweenMax.to(self.position, fps, data)
+    // var tween = TweenMax.to(self.position, fps, data)
 
     // self.addBehavior(tween)
     // self.pipe()
     // self.__dirtyPosition = true
-    self.position.set(data.x, data.y, 0)
+    self.position.set(copy.x, copy.y, copy.z)
+
+  },
+  makeRotationContinously: function(data, func) {
+    var self = this
+    var fps = 1/60
+
+    var copy = {
+      x:data.x || 0,
+      y:data.y || 0,
+      z:data.z || 0
+    }
+
+    if(typeof func === 'function') func(copy)
+
+    self.rotation.set(copy.x, copy.y, copy.z)
 
   },
   // TODO Now only supports 60fps, should use realtime framerate
