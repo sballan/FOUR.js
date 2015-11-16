@@ -5,8 +5,8 @@ var arrangement = new Four.Arrangement()
 // demo03()
 // demo04()
 // demo05()
-demo06()
-
+// demo06()
+demo07()
 
 function demo01() {
   //All you need is one line of code to get started
@@ -155,6 +155,68 @@ function demo06() {
     })
   })
 }
+
+function demo07 () {
+  var t1 = new Four.Mesh.Torus({radius: 3}).addToScene()
+  t1.material = Four.Preset.makeMaterial()
+
+
+  var t2 = new Four.Mesh.Torus({radius: 6}).addToScene()
+  t2.material = Four.Preset.makeMaterial()
+
+  var t3 = new Four.Mesh.Torus({radius: 9}).addToScene()
+  t3.material = Four.Preset.makeMaterial()
+
+  var t4 = new Four.Mesh.Torus({radius: 12}).addToScene()
+  t4.material = Four.Preset.makeMaterial()
+
+  var t5 = new Four.Mesh.Torus({radius: 14}).addToScene()
+  t5.material = Four.Preset.makeMaterial()
+
+  var t6 = new Four.Mesh.Torus({radius: 16}).addToScene()
+  t6.material = Four.Preset.makeMaterial()
+
+  // t1.makeBehaviorAndAdd('flipFlop', {x:10, y:2}, 5)
+  // t2.makeBehaviorAndAdd('flipFlop', {x:-2, y:10}, 5)
+  // t3.makeBehaviorAndAdd('flipFlop', {x:14, y:5}, 5)
+  // t4.makeBehaviorAndAdd('flipFlop', {x:10, y:2}, 5)
+  // t5.makeBehaviorAndAdd('flipFlop', {x:-2, y:10}, 5)
+  // t6.makeBehaviorAndAdd('flipFlop', {x:14, y:5}, 5)
+
+  t1.makeBehaviorAndAdd('flipFlop', {x:3, y:2+ 10}, 8)
+  t2.makeBehaviorAndAdd('flipFlop', {x:3, y:2+ 8}, 8)
+  t3.makeBehaviorAndAdd('flipFlop', {x:3, y:2+ 6}, 8)
+  t4.makeBehaviorAndAdd('flipFlop', {x:3, y:2+ 4}, 8)
+  t5.makeBehaviorAndAdd('flipFlop', {x:3, y:2+ 3}, 8)
+  t6.makeBehaviorAndAdd('flipFlop', {x:3, y:2}, 8)
+
+
+  arrangement.start()
+
+}
+
+function demo08 () {
+  var audiosrc = '/music.m4a'
+  var t1 = new Four.Mesh.Torus({radius: 3}).addToScene()
+  t1.material = Four.Preset.makeMaterial()
+
+
+  var t2 = new Four.Mesh.Torus({radius: 7}).addToScene()
+  t2.material = Four.Preset.makeMaterial()
+
+  var t3 = new Four.Mesh.Torus({radius: 10}).addToScene()
+  t3.material = Four.Preset.makeMaterial()
+
+  t1.makeBehaviorAndAdd('flipFlop', {x:10, y:2}, 5)
+  t2.makeBehaviorAndAdd('flipFlop', {x:-2, y:10}, 5)
+  t3.makeBehaviorAndAdd('flipFlop', {x:14, y:5}, 5)
+
+
+  arrangement.start()
+
+}
+
+
 
 
 // Place the new sphere object in the arrangement's scene

@@ -130,9 +130,9 @@ Four.Preset.data = {
       torus: {
         radius: 3,
         tube: 1,
-        radialSegments: 3,
-        tubularSegments: 10,
-        arc: Math.PI * 8,
+        radialSegments: 10,
+        tubularSegments: 50,
+        arc: Math.PI * 2,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,
