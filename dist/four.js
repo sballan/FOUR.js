@@ -107,6 +107,552 @@ Four.Help = function (arrangement) {
   return response;
 };
 
+Four.Preset.data = {
+  currentDefaults: {},
+  defaults: {
+    debugMode: true,
+    controls: {
+      OrbitControls: true,
+      lookAtScene: true,
+      lookAtSceneContinously: true,
+      resize: true,
+      mouse: false
+    },
+    renderer: {
+      clearColor: 0x111111,
+      shadowMap: true,
+      shadowMapSoft: true,
+      antialias: true
+    },
+    updates: [{ func: function func() {}
+    }],
+    lights: {
+      position: {
+        x: 20,
+        y: 20,
+        z: 50
+      },
+      color: 0xFFFFFF
+    },
+    camera: {
+      angle: 45,
+      aspect: window.innerWidth / window.innerHeight,
+      near: 0.1,
+      far: 500,
+      positionX: 20,
+      positionY: 0,
+      positionZ: 200
+    },
+    scene: {
+      physics: false,
+      fog: {
+        inScene: true,
+        color: 0x222222,
+        near: 50,
+        far: 400
+      }
+    },
+    mesh: {
+      geometry: new THREE.SphereGeometry(5, 16, 16),
+      materialType: 'MeshPhongMaterial',
+      materialOptions: {
+        color: 0x556677,
+        specular: 0xb4b4b4b4,
+        shininess: 2,
+        reflectivity: 2
+      },
+      physics: false,
+      sphere: {
+        physics: false,
+        x: 0,
+        y: 0,
+        z: 0,
+        radius: 5,
+        widthSegments: 16,
+        heightSegments: 16,
+        geometry: new THREE.SphereGeometry(5, 16, 16),
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+
+      },
+      box: {
+        height: 5,
+        width: 5,
+        depth: 5,
+        geometry: new THREE.BoxGeometry(10, 10, 10),
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        },
+        physics: false
+      },
+      circle: {
+        radius: 5,
+        segments: 32,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      cylinder: {
+        radiusTop: 5,
+        radiusBottom: 5,
+        height: 20,
+        radiusSegments: 32,
+        heightSegments: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      ring: {
+        innerRadius: 3,
+        outerRadius: 5,
+        thetaSegments: 32,
+        phiSegments: 8,
+        thetaStart: 0,
+        thetaLength: Math.PI * 2,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      torus: {
+        radius: 3,
+        tube: 1,
+        radialSegments: 3,
+        tubularSegments: 10,
+        arc: Math.PI * 8,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      },
+      torusKnot: {
+        radius: 10,
+        tube: 3,
+        radialSegments: 30,
+        tubularSegments: 50,
+        p: 2,
+        q: 3,
+        heightScale: 1,
+        materialType: 'MeshPhongMaterial',
+        materialOptions: {
+          color: 0x54f454,
+          specular: 0xb4b4b4b4,
+          shininess: 2,
+          reflectivity: 2
+        }
+      }
+    },
+    behaviors: {
+      moveTo: {
+        time: 2
+      },
+      moveFrom: {
+        target: { x: -4, y: -5, z: 3 },
+        time: 2
+      },
+      moveBackAndForth: {
+        time: 2
+      }
+    }
+  }
+
+};
+
+Four.Preset.prototype.simplePhysics = function () {
+  var settings = new Four.Preset('defaults');
+
+  settings.scene.physics = true;
+  settings.mesh.sphere.physics = true;
+
+  return settings;
+};
+
+Four.Mesh.Box = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.box;
+  Four.Preset.update(preset, defaults);
+
+  var width = preset.width;
+  var height = preset.height;
+  var depth = preset.depth;
+
+  preset.geometry = new THREE.BoxGeometry(width, height, depth);
+
+  if (preset.physics) {
+    var materialType = preset.materialType;
+    var materialOptions = preset.materialOptions;
+    preset.material = new THREE[materialType](materialOptions);
+    Physijs.BoxMesh.call(this, preset.geometry, preset.material);
+    Four.Behavior.Apply(this);
+  } else {
+    Four.Mesh.call(this, preset);
+    self.prototype = Object.create(Four.Mesh.prototype);
+    self.prototype.constructor = Four.Mesh.Box;
+  }
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Box.constructor = Four.Mesh.Box;
+
+Four.Mesh.Circle = function (preset) {
+  var self = this;
+
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.circle;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var segments = preset.segments;
+
+  preset.geometry = new THREE.CircleGeometry(radius, segments);
+  Four.Mesh.call(this, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.constructor = Four.Mesh.Circle;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Circle.constructor = Four.Mesh.Circle;
+
+Four.Mesh.Cylinder = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.cylinder;
+  Four.Preset.update(preset, defaults);
+
+  var radiusTop = preset.radiusTop;
+  var radiusBottom = preset.radiusBottom;
+  var height = preset.height;
+  var radiusSegments = preset.radiusSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
+  Four.Mesh.call(self, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Cylinder;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
+
+Four.Mesh.prototype.addToScene = function () {
+  var self = this;
+  Four.current().addToScene(self);
+};
+
+// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
+Four.Mesh.prototype.createSet = function (number, cb) {
+  var self = this;
+
+  for (var i = 0; i < number; i++) {
+    var mesh = self.clone();
+    cb(mesh);
+  }
+};
+
+// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
+Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
+  var self = this;
+  var save = self.position;
+  var scene = Four.current().scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var p = self.position;
+  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
+
+  function createRow(mesh) {
+    p.add(spacing);
+    mesh.position.set(p.x, p.y, p.z);
+    group.add(mesh);
+    //mesh.material.color.setHex(Four.Preset.randomColor())
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createRow);
+
+  scene.add(group);
+
+  self.position.set(save.x, save.y, save.z);
+  return group;
+};
+
+// Be aware that this function will hide the original object
+Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
+  var self = this;
+  self.visible = false;
+  var scene = Four.current().scene;
+  var group = new Four.Object3D();
+  group.add(self);
+
+  var angleSize = Math.PI * 2 / number;
+  var angle = angleSize;
+  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
+
+  function createCircle(mesh, p) {
+    var x = center.x + radius * Math.cos(angle);
+    var y = center.y + radius * Math.sin(angle);
+
+    mesh.position.setX(x);
+    mesh.position.setY(y);
+    group.add(mesh);
+
+    angle += angleSize;
+
+    if (typeof cb === 'function') cb(mesh);
+  }
+
+  self.createSet(number, createCircle);
+
+  scene.add(group);
+
+  return group;
+};
+
+Four.Mesh.prototype.clone = function () {
+  // if(!preset) preset = {}
+  // var defaults = new Four.Preset('defaults').mesh
+  // Four.Preset.update(preset, defaults)
+
+  var self = this;
+  var preset = {};
+  preset.geometry = self.geometry;
+  preset.material = self.material;
+
+  return new self.constructor(preset);
+};
+
+//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
+Four.Mesh.prototype.processArgs = function () {
+  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
+    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
+    return point;
+  } else return false;
+};
+
+Four.Mesh.Ring = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.ring;
+  Four.Preset.update(preset, defaults);
+
+  var innerRadius = preset.innerRadius;
+  var outerRadius = preset.outerRadius;
+  var thetaSegments = preset.thetaSegments;
+
+  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
+  Four.Mesh.call(this, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Ring;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Ring.constructor = Four.Mesh.Ring;
+
+Four.Mesh.Sphere = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.sphere;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var widthSegments = preset.widthSegments;
+  var heightSegments = preset.heightSegments;
+
+  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+  Four.Mesh.call(self, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Sphere;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
+Four.Mesh.Sphere.prototype.constructor = Four.Mesh.Sphere;
+
+Four.Mesh.Torus = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.torus;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var arc = preset.arc;
+
+  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
+  Four.Mesh.call(self, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.Torus;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.Torus.constructor = Four.Mesh.Torus;
+
+Four.Mesh.TorusKnot = function (preset) {
+  var self = this;
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').mesh.torusKnot;
+  Four.Preset.update(preset, defaults);
+
+  var radius = preset.radius;
+  var tube = preset.tube;
+  var radialSegments = preset.radialSegments;
+  var tubularSegments = preset.tubularSegments;
+  var p = preset.p;
+  var q = preset.q;
+  var heightScale = preset.heightScale;
+
+  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
+  Four.Mesh.call(this, preset);
+
+  self.prototype = Object.create(Four.Mesh.prototype);
+  self.prototype.constructor = Four.Mesh.TorusKnot;
+};
+
+// Setup the prototype and constructor for purposes of inheritance
+Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
+Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
+
+Four.Setup.prototype.Camera = function (preset) {
+  if (!preset) preset = {};
+  if (!preset) preset = new Four.Preset('defaults').camera;
+  var defaults = new Four.Preset('defaults').camera;
+
+  Four.Preset.update(preset, defaults);
+  var angle = preset.angle;
+  var aspect = preset.aspect;
+  var near = preset.near;
+  var far = preset.far;
+  var positionX = preset.positionX;
+  var positionY = preset.positionY;
+  var positionZ = preset.positionZ;
+
+  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
+
+  //Sets the camera to any position passed in the options
+  camera.position.set(positionX, positionY, positionZ);
+
+  Four.Behavior.Apply(camera);
+
+  return camera;
+};
+
+Four.Setup.prototype.GUI = function (options) {
+  var guiControls = new function () {
+    //this.rotationX = 0.01;
+    //this.rotationY = 0.1;
+    //this.rotationZ = 0.01;
+  }();
+
+  var datGUI = new dat.GUI();
+  //The values can now be between 0 and 1 for all these
+  // datGUI.add(guiControls, 'rotationX', 0, 1)
+  //datGUI.add(guiControls, 'rotationY', 0, 1)
+  // datGUI.add(guiControls, 'rotationZ', 0, 1)
+
+  //$(domSelector).append(viz.scene.renderer.domElement);
+
+  return guiControls;
+};
+Four.Setup.prototype.Lights = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').lights;
+  Four.Preset.update(preset, defaults);
+
+  var x = preset.position.x;
+  var y = preset.position.y;
+  var z = preset.position.z;
+  //var color = preset.color;
+
+  var light = new THREE.PointLight();
+  Four.Behavior.Apply(light);
+
+  light.position.set(x, y, z);
+
+  return [light];
+};
+
+Four.Setup.prototype.Renderer = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').renderer;
+  Four.Preset.update(preset, defaults);
+
+  var clearColor = preset.clearColor;
+  var shadowMap = preset.shadowMap;
+  var shadowMapSoft = preset.shadowMapSoft;
+  var antialias = preset.antialias;
+
+  var renderer = new THREE.WebGLRenderer({
+    antialias: antialias
+  });
+  renderer.setClearColor(clearColor);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = shadowMap;
+  renderer.shadowMapSoft = shadowMapSoft;
+
+  var selector = document.querySelector(this.domSelector);
+  selector.appendChild(renderer.domElement);
+
+  return renderer;
+};
+
+Four.Setup.prototype.Scene = function (preset) {
+  if (!preset) preset = {};
+  var defaults = new Four.Preset('defaults').scene;
+  Four.Preset.update(preset, defaults);
+
+  var scene; // Physics will be set on next line
+  if (preset.physics) {
+    scene = new Physijs.Scene();
+    scene.physics = true;
+  } else scene = new THREE.Scene(preset);
+
+  //Set's whether or not the scene has fog
+  if (preset.fog.inScene) {
+    var color = preset.fog.color;
+    var near = preset.fog.near;
+    var far = preset.fog.far;
+    scene.fog = new THREE.Fog(color, near, far);
+  }
+  return scene;
+};
+
 var p = {};
 Four.Behavior.behaviors = {
   flipFlop: function flipFlop(amount, time, repeat) {
@@ -256,548 +802,6 @@ Four.Behavior.Handler = {
 
 };
 
-Four.Mesh.Box = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.box;
-  Four.Preset.update(preset, defaults);
-
-  var width = preset.width;
-  var height = preset.height;
-  var depth = preset.depth;
-
-  preset.geometry = new THREE.BoxGeometry(width, height, depth);
-
-  if (preset.physics) {
-    var materialType = preset.materialType;
-    var materialOptions = preset.materialOptions;
-    preset.material = new THREE[materialType](materialOptions);
-    Physijs.BoxMesh.call(this, preset.geometry, preset.material);
-    Four.Behavior.Apply(this);
-  } else {
-    Four.Mesh.call(this, preset);
-    this.prototype = Object.create(Four.Mesh.prototype);
-    this.prototype.constructor = Four.Mesh.Box;
-  }
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Box.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Box.constructor = Four.Mesh.Box;
-
-Four.Mesh.Circle = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.circle;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var segments = preset.segments;
-
-  preset.geometry = new THREE.CircleGeometry(radius, segments);
-  Four.Mesh.call(this, preset);
-  this.prototype = Object.create(Four.Mesh.prototype);
-  this.constructor = Four.Mesh.Circle;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Circle.constructor = Four.Mesh.Circle;
-
-Four.Mesh.Cylinder = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.cylinder;
-  Four.Preset.update(preset, defaults);
-
-  var radiusTop = preset.radiusTop;
-  var radiusBottom = preset.radiusBottom;
-  var height = preset.height;
-  var radiusSegments = preset.radiusSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments);
-  Four.Mesh.call(this, preset);
-
-  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-  Four.Mesh.Circle.constructor = Four.Mesh.Cylinder;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Cylinder.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Cylinder.constructor = Four.Mesh.Cylinder;
-
-//Class method to make a new mesh
-Four.Mesh.make = function (string, preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh;
-  Four.Preset.update(preset, defaults);
-
-  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-  var makeNewMesh = Four.Mesh[string];
-
-  // type will become the presets that should be passed to this new mesh
-  var type = preset[string];
-
-  return new makeNewMesh(type);
-};
-
-// createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
-Four.Mesh.prototype.createSet = function (number, cb) {
-  var self = this;
-
-  for (var i = 0; i < number; i++) {
-    var mesh = self.clone();
-    cb(mesh);
-  }
-};
-
-// createSetRow will create a number of clones of a given mesh, and place them in the scene at intervals determined by the spacing. spacing is a Vector3, and so has x, y, and z fields.
-Four.Mesh.prototype.createSetRow = function (number, spacing, cb) {
-  var self = this;
-  var save = self.position;
-  var scene = Four.current().scene;
-  var group = new Four.Object3D();
-  group.add(self);
-
-  var p = self.position;
-  spacing = new THREE.Vector3(spacing.x || 0, spacing.y || 0, spacing.z || 0);
-
-  function createRow(mesh) {
-    p.add(spacing);
-    mesh.position.set(p.x, p.y, p.z);
-    group.add(mesh);
-    //mesh.material.color.setHex(Four.Preset.randomColor())
-    if (typeof cb === 'function') cb(mesh);
-  }
-
-  self.createSet(number, createRow);
-
-  scene.add(group);
-
-  self.position.set(save.x, save.y, save.z);
-  return group;
-};
-
-// Be aware that this function will hide the original object
-Four.Mesh.prototype.createSetCircle = function (number, radius, cb) {
-  var self = this;
-  self.visible = false;
-  var scene = Four.current().scene;
-  var group = new Four.Object3D();
-  group.add(self);
-
-  var angleSize = Math.PI * 2 / number;
-  var angle = angleSize;
-  var center = self.position.clone().sub({ x: -radius, y: 0, z: 0 });
-
-  function createCircle(mesh, p) {
-    var x = center.x + radius * Math.cos(angle);
-    var y = center.y + radius * Math.sin(angle);
-
-    mesh.position.setX(x);
-    mesh.position.setY(y);
-    group.add(mesh);
-
-    angle += angleSize;
-
-    if (typeof cb === 'function') cb(mesh);
-  }
-
-  self.createSet(number, createCircle);
-
-  scene.add(group);
-
-  return group;
-};
-
-Four.Mesh.prototype.clone = function () {
-  var self = this;
-  var preset = new Four.Preset('defaults').mesh;
-  preset.geometry = self.geometry;
-  preset.material = self.material;
-
-  return new self.constructor();
-};
-
-//TODO This function currently not used.  Is meant to be a helper function for meshes to let them take a variable number of arguments.
-Four.Mesh.prototype.processArgs = function () {
-  if (arguments.length === 3 && typeof arguments[0] === 'number' && typeof arguments[1] === 'number' && typeof arguments[2] === 'number') {
-    var point = THREE.Vector3(arguments[0], arguments[1], arguments[2]);
-    return point;
-  } else return false;
-};
-
-Four.Mesh.Ring = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.ring;
-  Four.Preset.update(preset, defaults);
-
-  var innerRadius = preset.innerRadius;
-  var outerRadius = preset.outerRadius;
-  var thetaSegments = preset.thetaSegments;
-
-  preset.geometry = new THREE.RingGeometry(innerRadius, outerRadius, thetaSegments);
-  Four.Mesh.call(this, preset);
-
-  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-  Four.Mesh.Circle.constructor = Four.Mesh.Ring;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Ring.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Ring.constructor = Four.Mesh.Ring;
-
-Four.Mesh.Sphere = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.sphere;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var widthSegments = preset.widthSegments;
-  var heightSegments = preset.heightSegments;
-
-  preset.geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
-  Four.Mesh.call(this, preset);
-
-  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-  Four.Mesh.Circle.constructor = Four.Mesh.Sphere;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Sphere.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Sphere.constructor = Four.Mesh.Sphere;
-
-Four.Mesh.Torus = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.torus;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var tube = preset.tube;
-  var radialSegments = preset.radialSegments;
-  var tubularSegments = preset.tubularSegments;
-  var arc = preset.arc;
-
-  preset.geometry = new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc);
-  Four.Mesh.call(this, preset);
-
-  Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
-  Four.Mesh.Torus.prototype.constructor = Four.Mesh.Torus;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.Torus.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.Torus.constructor = Four.Mesh.Torus;
-
-Four.Mesh.TorusKnot = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').mesh.torusKnot;
-  Four.Preset.update(preset, defaults);
-
-  var radius = preset.radius;
-  var tube = preset.tube;
-  var radialSegments = preset.radialSegments;
-  var tubularSegments = preset.tubularSegments;
-  var p = preset.p;
-  var q = preset.q;
-  var heightScale = preset.heightScale;
-
-  preset.geometry = new THREE.TorusKnotGeometry(radius, tube, radialSegments, tubularSegments, p, q, heightScale);
-  Four.Mesh.call(this, preset);
-
-  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype);
-  Four.Mesh.Circle.constructor = Four.Mesh.TorusKnot;
-};
-
-// Setup the prototype and constructor for purposes of inheritance
-Four.Mesh.TorusKnot.prototype = Object.create(Four.Mesh.prototype);
-Four.Mesh.TorusKnot.constructor = Four.Mesh.TorusKnot;
-
-Four.Preset.data = {
-  currentDefaults: {},
-  defaults: {
-    debugMode: true,
-    controls: {
-      OrbitControls: true,
-      lookAtScene: true,
-      lookAtSceneContinously: true,
-      resize: true,
-      mouse: false
-    },
-    renderer: {
-      clearColor: 0x111111,
-      shadowMap: true,
-      shadowMapSoft: true,
-      antialias: true
-    },
-    updates: [{ func: function func() {}
-    }],
-    lights: {
-      position: {
-        x: 50,
-        y: 20,
-        z: 50
-      },
-      color: 0xFFFFFF
-    },
-    camera: {
-      angle: 45,
-      aspect: window.innerWidth / window.innerHeight,
-      near: 0.1,
-      far: 500,
-      positionX: 20,
-      positionY: 0,
-      positionZ: 200
-    },
-    scene: {
-      physics: false,
-      fog: {
-        inScene: true,
-        color: 0x222222,
-        near: 50,
-        far: 400
-      }
-    },
-    mesh: {
-      geometry: new THREE.SphereGeometry(5, 16, 16),
-      materialType: 'MeshPhongMaterial',
-      materialOptions: {
-        color: 0x556677,
-        specular: 0xb4b4b4b4,
-        shininess: 2,
-        reflectivity: 2
-      },
-      physics: false,
-      sphere: {
-        physics: false,
-        x: 0,
-        y: 0,
-        z: 0,
-        radius: 5,
-        widthSegments: 16,
-        heightSegments: 16,
-        geometry: new THREE.SphereGeometry(5, 16, 16),
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0xb4b4b4b4,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-
-      },
-      box: {
-        height: 5,
-        width: 5,
-        depth: 5,
-        geometry: new THREE.BoxGeometry(10, 10, 10),
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        },
-        physics: false
-      },
-      circle: {
-        radius: 5,
-        segments: 32,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      cylinder: {
-        radiusTop: 5,
-        radiusBottom: 5,
-        height: 20,
-        radiusSegments: 32,
-        heightSegments: 1,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      ring: {
-        innerRadius: 3,
-        outerRadius: 5,
-        thetaSegments: 32,
-        phiSegments: 8,
-        thetaStart: 0,
-        thetaLength: Math.PI * 2,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      torus: {
-        radius: 3,
-        tube: 1,
-        radialSegments: 3,
-        tubularSegments: 10,
-        arc: Math.PI * 8,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      },
-      torusKnot: {
-        radius: 10,
-        tube: 3,
-        radialSegments: 30,
-        tubularSegments: 50,
-        p: 2,
-        q: 3,
-        heightScale: 1,
-        materialType: 'MeshPhongMaterial',
-        materialOptions: {
-          color: 0x54f454,
-          specular: 0xb4b4b4b4,
-          shininess: 2,
-          reflectivity: 2
-        }
-      }
-    },
-    behaviors: {
-      moveTo: {
-        time: 2
-      },
-      moveFrom: {
-        target: { x: -4, y: -5, z: 3 },
-        time: 2
-      },
-      moveBackAndForth: {
-        time: 2
-      }
-    }
-  }
-
-};
-
-Four.Preset.prototype.simplePhysics = function () {
-  var settings = new Four.Preset('defaults');
-
-  settings.scene.physics = true;
-  settings.mesh.sphere.physics = true;
-
-  return settings;
-};
-
-Four.Setup.prototype.Camera = function (preset) {
-  if (!preset) preset = {};
-  if (!preset) preset = new Four.Preset('defaults').camera;
-  var defaults = new Four.Preset('defaults').camera;
-
-  Four.Preset.update(preset, defaults);
-  var angle = preset.angle;
-  var aspect = preset.aspect;
-  var near = preset.near;
-  var far = preset.far;
-  var positionX = preset.positionX;
-  var positionY = preset.positionY;
-  var positionZ = preset.positionZ;
-
-  var camera = new THREE.PerspectiveCamera(angle, aspect, near, far);
-
-  //Sets the camera to any position passed in the options
-  camera.position.set(positionX, positionY, positionZ);
-
-  Four.Behavior.Apply(camera);
-
-  return camera;
-};
-
-Four.Setup.prototype.GUI = function (options) {
-  var guiControls = new function () {
-    //this.rotationX = 0.01;
-    //this.rotationY = 0.1;
-    //this.rotationZ = 0.01;
-  }();
-
-  var datGUI = new dat.GUI();
-  //The values can now be between 0 and 1 for all these
-  // datGUI.add(guiControls, 'rotationX', 0, 1)
-  //datGUI.add(guiControls, 'rotationY', 0, 1)
-  // datGUI.add(guiControls, 'rotationZ', 0, 1)
-
-  //$(domSelector).append(viz.scene.renderer.domElement);
-
-  return guiControls;
-};
-Four.Setup.prototype.Lights = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').lights;
-  Four.Preset.update(preset, defaults);
-
-  var x = preset.position.x;
-  var y = preset.position.y;
-  var z = preset.position.z;
-  //var color = preset.color;
-
-  var light = new THREE.PointLight();
-  Four.Behavior.Apply(light);
-
-  light.position.set(x, y, z);
-
-  return [light];
-};
-
-Four.Setup.prototype.Renderer = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').renderer;
-  Four.Preset.update(preset, defaults);
-
-  var clearColor = preset.clearColor;
-  var shadowMap = preset.shadowMap;
-  var shadowMapSoft = preset.shadowMapSoft;
-  var antialias = preset.antialias;
-
-  var renderer = new THREE.WebGLRenderer({
-    antialias: antialias
-  });
-  renderer.setClearColor(clearColor);
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.shadowMap.enabled = shadowMap;
-  renderer.shadowMapSoft = shadowMapSoft;
-
-  var selector = document.querySelector(this.domSelector);
-  selector.appendChild(renderer.domElement);
-
-  return renderer;
-};
-
-Four.Setup.prototype.Scene = function (preset) {
-  if (!preset) preset = {};
-  var defaults = new Four.Preset('defaults').scene;
-  Four.Preset.update(preset, defaults);
-
-  var scene; // Physics will be set on next line
-  if (preset.physics) {
-    scene = new Physijs.Scene();
-    scene.physics = true;
-  } else scene = new THREE.Scene(preset);
-
-  //Set's whether or not the scene has fog
-  if (preset.fog.inScene) {
-    var color = preset.fog.color;
-    var near = preset.fog.near;
-    var far = preset.fog.far;
-    scene.fog = new THREE.Fog(color, near, far);
-  }
-  return scene;
-};
-
 Four.Arrangement.prototype = {
   //The Arrangement is initialized using preset settings.  A Preset object is used to set these values.
   init: function init(preset) {
@@ -900,7 +904,14 @@ Four.Arrangement.prototype = {
     this.scene.add(grid);
   },
   addToScene: function addToScene(mesh) {
-    this.scene.add(mesh);
+    var self = this;
+    if (mesh.constructor === Array) {
+      mesh.forEach(function (o) {
+        self.scene.add(o);
+      });
+    } else {
+      self.scene.add(mesh);
+    }
   },
   resize: function resize() {
     var self = this;

@@ -21,7 +21,7 @@ Four.Preset.data = {
     ],
     lights: {
       position: {
-        x: 50,
+        x: 20,
         y: 20,
         z: 50
       },
@@ -66,7 +66,7 @@ Four.Preset.data = {
         geometry: new THREE.SphereGeometry(5, 16, 16),
         materialType: 'MeshPhongMaterial',
         materialOptions: {
-          color: 0xb4b4b4b4,
+          color: 0x54f454,
           specular: 0xb4b4b4b4,
           shininess: 2,
           reflectivity: 2
