@@ -45,7 +45,7 @@ function demo03() {
   s1.position.setX(-100)
 
   // Create a set of meshes in a row, specified by number and spacing
-  g = s1.createSetRow(10, {x:10})
+  var g = s1.createSetRow(10, {x:10})
 
   g.makeBehaviorAndAdd('moveBackAndForth', {x:10,y:10,z:0}, 3)
   g.pipe()
@@ -159,7 +159,6 @@ function demo06() {
 function demo07 () {
   var t1 = new Four.Mesh.Torus({radius: 3}).addToScene()
   t1.material = Four.Preset.makeMaterial()
-
 
   var t2 = new Four.Mesh.Torus({radius: 6}).addToScene()
   t2.material = Four.Preset.makeMaterial()
