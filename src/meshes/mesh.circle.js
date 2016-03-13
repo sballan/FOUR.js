@@ -1,4 +1,6 @@
 Four.Mesh.Circle = function(preset) {
+  var self = this
+
   if(!preset) preset = {}
   var defaults = new Four.Preset('defaults').mesh.circle
 	Four.Preset.update(preset, defaults)
@@ -8,8 +10,9 @@ Four.Mesh.Circle = function(preset) {
 
   preset.geometry = new THREE.CircleGeometry(radius, segments)
   Four.Mesh.call(this, preset)
-  this.prototype = Object.create(Four.Mesh.prototype)
-  this.constructor = Four.Mesh.Circle
+  
+  self.prototype = Object.create(Four.Mesh.prototype)
+  self.constructor = Four.Mesh.Circle
 }
 
 // Setup the prototype and constructor for purposes of inheritance

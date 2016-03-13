@@ -13,7 +13,7 @@ app.use(express.static(__dirname + '/dist'));
 app.use(express.static(__dirname + '/viewer'));
 
 router.get('/', function(req, res, next) {
-	send.send('/index.html')
+	res.send('/index.html')
 })
 
 

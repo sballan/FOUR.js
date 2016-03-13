@@ -5,12 +5,12 @@ Four.Preset.data = {
     controls: {
       OrbitControls: true,
       lookAtScene: true,
-      lookAtSceneContinously: true,
+      lookAtSceneContinously: false,
       resize: true,
       mouse: false
     },
     renderer: {
-      clearColor: 0x111111,
+      clearColor: 0x999999,
       shadowMap: true,
       shadowMapSoft: true,
       antialias: true
@@ -21,7 +21,7 @@ Four.Preset.data = {
     ],
     lights: {
       position: {
-        x: 50,
+        x: 20,
         y: 20,
         z: 50
       },
@@ -32,9 +32,9 @@ Four.Preset.data = {
       aspect: window.innerWidth / window.innerHeight,
       near: 0.1,
       far: 500,
-      positionX: 20,
-      positionY: 0,
-      positionZ: 200
+      positionX: 100,
+      positionY: 10,
+      positionZ: 100
     },
     scene: {
       physics: false,
@@ -66,7 +66,7 @@ Four.Preset.data = {
         geometry: new THREE.SphereGeometry(5, 16, 16),
         materialType: 'MeshPhongMaterial',
         materialOptions: {
-          color: 0xb4b4b4b4,
+          color: 0x54f454,
           specular: 0xb4b4b4b4,
           shininess: 2,
           reflectivity: 2
@@ -130,9 +130,9 @@ Four.Preset.data = {
       torus: {
         radius: 3,
         tube: 1,
-        radialSegments: 3,
-        tubularSegments: 10,
-        arc: Math.PI * 8,
+        radialSegments: 10,
+        tubularSegments: 50,
+        arc: Math.PI * 2,
         materialType: 'MeshPhongMaterial',
         materialOptions: {
           color: 0x54f454,

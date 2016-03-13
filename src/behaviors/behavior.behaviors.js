@@ -5,6 +5,7 @@ Four.Behavior.behaviors = {
     amount.repeat = repeat
     amount.yoyo = true
     amount.delay = 0
+    amount.ease = Power2.easeInOut
     var tween = TweenMax.to(this.rotation, time, amount)
     return tween
   },

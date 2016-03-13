@@ -109,7 +109,14 @@ Four.Arrangement.prototype = {
     this.scene.add(grid);
   },
   addToScene: function(mesh) {
-    this.scene.add(mesh)
+    var self = this
+    if(mesh.constructor === Array) {
+      mesh.forEach(function(o) {
+        self.scene.add(o)
+      })
+    } else {
+      self.scene.add(mesh)
+    }
   },
   resize: function() {
     var self = this

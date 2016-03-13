@@ -1,16 +1,7 @@
-//Class method to make a new mesh
-Four.Mesh.make = function(string, preset) {
-  if(!preset) preset = {}
-  var defaults = new Four.Preset('defaults').mesh
-	Four.Preset.update(preset, defaults)
-
-  // makeNewMesh will became a function that returns a mesh of the type specified in the 'string' parameter
-  var makeNewMesh = Four.Mesh[string];
-
-  // type will become the presets that should be passed to this new mesh
-  var type = preset[string];
-
-  return new makeNewMesh(type);
+Four.Mesh.prototype.addToScene = function() {
+  var self = this
+  Four.current().addToScene(self)
+  return self
 }
 
 // createSet is a generic function that will create a a number of clones of the mesh that calls it, and pass them into a callback.
@@ -84,12 +75,16 @@ Four.Mesh.prototype.createSetCircle = function(number, radius, cb) {
 
 
 Four.Mesh.prototype.clone = function() {
+  // if(!preset) preset = {}
+  // var defaults = new Four.Preset('defaults').mesh
+  // Four.Preset.update(preset, defaults)
+
   var self = this
-  var preset = new Four.Preset('defaults').mesh
+  var preset = {}
   preset.geometry = self.geometry
   preset.material = self.material
 
-  return new self.constructor()
+  return new self.constructor(preset)
 }
 
 

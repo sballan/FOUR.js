@@ -1,4 +1,5 @@
 Four.Mesh.Cylinder = function(preset) {
+  var self = this
   if(!preset) preset = {}
   var defaults = new Four.Preset('defaults').mesh.cylinder
 	Four.Preset.update(preset, defaults)
@@ -10,10 +11,10 @@ Four.Mesh.Cylinder = function(preset) {
   var heightSegments = preset.heightSegments
 
   preset.geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radiusSegments, heightSegments)
-  Four.Mesh.call(this, preset)
+  Four.Mesh.call(self, preset)
 
-  Four.Mesh.Circle.prototype = Object.create(Four.Mesh.prototype)
-  Four.Mesh.Circle.constructor = Four.Mesh.Cylinder
+  self.prototype = Object.create(Four.Mesh.prototype)
+  self.prototype.constructor = Four.Mesh.Cylinder
 
 
 }

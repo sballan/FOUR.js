@@ -1,4 +1,5 @@
 Four.Mesh.Box = function(preset) {
+  var self = this
   if(!preset) preset = {}
   var defaults = new Four.Preset('defaults').mesh.box
 	Four.Preset.update(preset, defaults)
@@ -17,8 +18,8 @@ Four.Mesh.Box = function(preset) {
     Four.Behavior.Apply(this)
   }else {
     Four.Mesh.call(this, preset)
-    this.prototype = Object.create(Four.Mesh.prototype)
-    this.prototype.constructor = Four.Mesh.Box
+    self.prototype = Object.create(Four.Mesh.prototype)
+    self.prototype.constructor = Four.Mesh.Box
   }
 
 
